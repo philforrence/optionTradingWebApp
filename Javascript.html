@@ -8,16 +8,23 @@ function addCell(value, newCell, newRow)
         newCell.appendChild(newText);
 }
 
-
+function calculateMaxLoss(shortStrike, longStrike, credit, numberOfContracts)
+{
+    var spreadWidth = Math.abs(shortStrike-longStrike);
+    var maxLossUnit = spreadWidth-credit;
+    var maxLossTotal = maxLossUnit*numberOfContracts;
+    return maxLossTotal.toFixed(2);
+}
 function addCalculations(range, newCell, newRow, i)
 {
-    var spreadWidth = Math.abs(range[i][3]-range[i][4]);
-    var maxLossUnit = spreadWidth-range[i][6];
-    var maxLossTotal = maxLossUnit*range[i][5];
-    addCell((maxLossTotal).toFixed(2), newCell, newRow);
+    // var spreadWidth = Math.abs(range[i][3]-range[i][4]);
+    // var maxLossUnit = spreadWidth-range[i][6];
+    var maxLossTotal = calculateMaxLoss(range[i][3], range[i][4], range[i][6], range[i][5]);
+    addCell(maxLossTotal, newCell, newRow);
     var priceArray = getSpreadPrice(range[i][0], range[i][1], range[i][2], range[i][3], range[i][4], range[i+1][3], range[i+1][4]);
     addCell(priceArray[0], newCell, newRow);
     addCell(priceArray[1], newCell, newRow);
+    addCell(range[i][6] - priceArray[0], newCell, newRow);
     //addCell()
 }
 function addHeader(tableName, headerName)
@@ -62,6 +69,8 @@ function findOpenTrades(range)
   addHeader("theTable", "Max Loss");
   addHeader("theTable", "Mid Price");
   addHeader("theTable", "Last Price");
+  addHeader("theTable", "P/L");
+
 
   }
   function test(range)
@@ -92,9 +101,6 @@ function findOpenTrades(range)
   }
 }
 
-
-
-
 function set2018Trades(range)
 {
 var tab = document.getElementById("table2018");
@@ -124,19 +130,6 @@ for (var j = 0; j < range[0].length; j++) {
     tr.appendChild(th);
 }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
