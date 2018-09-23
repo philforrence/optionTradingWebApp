@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+
+    <title>Statistics</title>
+    <?!= include('Stylesheet'); ?>
+    <?!= include('Javascript'); ?>
+  </head>
+  <body>
+  <h1>2018</h1>  
+     <?var url = getScriptUrl();?><a href='<?=url?>?page=Index'>Current Positions</a>
+     <?var url = getScriptUrl();?><a href='<?=url?>?page=2018'>2018</a>
+    <table id="stats">
+    <thead>
+    <tr>
+    </tr>
+    </thead>
+	</table>
+    <input type="button" value="Load Positions"
+      onclick="google.script.run.withSuccessHandler(set2018Trades).get2018Trades()" />
+   </body>
+</html>
+
+
+

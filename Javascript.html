@@ -1,0 +1,270 @@
+<script>
+
+//<!–– MAKE THE yahoo callouts on the client side!!!!-->
+function addCell(value, newCell, newRow)
+{
+        newCell = newRow.insertCell();
+        var newText = document.createTextNode(value);
+        newCell.appendChild(newText);
+}
+
+
+function addCalculations(range, newCell, newRow, i)
+{
+    var spreadWidth = Math.abs(range[i][3]-range[i][4]);
+    var maxLossUnit = spreadWidth-range[i][6];
+    var maxLossTotal = maxLossUnit*range[i][5];
+    addCell((maxLossTotal).toFixed(2), newCell, newRow);
+    var priceArray = getSpreadPrice(range[i][0], range[i][1], range[i][2], range[i][3], range[i][4], range[i+1][3], range[i+1][4]);
+    addCell(priceArray[0], newCell, newRow);
+    addCell(priceArray[1], newCell, newRow);
+    //addCell()
+}
+function addHeader(tableName, headerName)
+{
+  var tr, th;
+  tr = document.getElementById(tableName).tHead.children[0],
+  th = document.createElement('th');
+  th.innerHTML = headerName;
+  tr.appendChild(th);
+}
+
+function findOpenTrades(range)
+{
+  var tab = document.getElementById("theTable");
+  var newRow, newCell;
+  var header = tab.createTHead();
+
+  for (var i = 1; i < range.length; i++) {
+      if(range[i][3] == "") break;
+      if(range[i][9] == "")
+      {
+          newRow = tab.insertRow();
+          for (var j = 0; j < range[i].length; j++) {
+              addCell(range[i][j], newCell, newRow);
+          }        
+          addCalculations(range, newCell, newRow, i);
+          if(range[i][1] == "IB" ||range[i][1] == "IC")
+          {
+              i++;
+              newRow = tab.insertRow();
+              for (var j = 0; j < range[i].length; j++) {
+                  addCell(range[i][j], newCell, newRow);
+              }
+          }
+      }
+  }
+
+  newRow = header.insertRow();     
+  for (var j = 0; j < range[0].length; j++) { 
+      addHeader("theTable", range[0][j]); 
+  }
+  addHeader("theTable", "Max Loss");
+  addHeader("theTable", "Mid Price");
+  addHeader("theTable", "Last Price");
+
+  }
+  function test(range)
+  {
+  var tab = document.getElementById("theTable");
+  var newRow, newCell, newText, currentValue;
+  var header = tab.createTHead();
+
+  for (var i = 1; i < range.length; i++) {
+  newRow = tab.insertRow();
+    for (var j = 0; j < range[i].length; j++) {
+    currentValue = range[i][j];
+    newCell = newRow.insertCell();
+    newText = document.createTextNode(currentValue);
+    newCell.appendChild(newText);
+   }
+  }
+
+
+  var tr, th;
+  newRow = header.insertRow();     
+  for (var j = 0; j < range[0].length; j++) {
+      tr = document.getElementById('theTable').tHead.children[0],
+      th = document.createElement('th');
+      currentValue = range[0][j];
+      th.innerHTML = currentValue;
+      tr.appendChild(th);
+  }
+}
+
+
+
+
+function set2018Trades(range)
+{
+var tab = document.getElementById("table2018");
+var newRow, newCell, newText, currentValue;
+var header = tab.createTHead();
+
+
+
+for (var i = 1; i < range.length; i++) {
+newRow = tab.insertRow();
+for (var j = 0; j < range[i].length; j++) {
+currentValue = range[i][j];
+newCell = newRow.insertCell();
+newText = document.createTextNode(currentValue);
+newCell.appendChild(newText);
+}
+}
+
+
+var tr, th;
+newRow = header.insertRow();     
+for (var j = 0; j < range[0].length; j++) {
+    tr = document.getElementById('table2018').tHead.children[0],
+    th = document.createElement('th');
+    currentValue = range[0][j];
+    th.innerHTML = currentValue;
+    tr.appendChild(th);
+}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function getTwoOptionMidPrice(optionList, shortStrike, longStrike)
+{
+    var i, longMidPrice, shortMidPrice;
+    for (i = 0; i < optionList.length; i++)
+    {
+      if (optionList[i].strike == shortStrike)
+        shortMidPrice = (optionList[i].bid + optionList[i].ask)/2;
+      if (optionList[i].strike == longStrike)
+        longMidPrice = (optionList[i].bid + optionList[i].ask)/2;    
+    }
+    return shortMidPrice - longMidPrice;
+}
+function getPutSpreadMidPrice(puts, shortStrike, longStrike)
+{
+  return getTwoOptionMidPrice(puts, shortStrike, longStrike);
+}
+function getCallSpreadMidPrice(calls, shortStrike, longStrike)
+{
+  return getTwoOptionMidPrice(calls, shortStrike, longStrike);
+}
+function getICSpreadMidPrice(puts, calls, shortStrike, longStrike, shortStrike2, longStrike2)
+{
+  return getPutSpreadMidPrice(puts, shortStrike, longStrike) + getCallSpreadMidPrice(calls, shortStrike2, longStrike2);
+}
+function getIBSpreadMidPrice(puts, calls, shortStrike, longStrike, shortStrike2, longStrike2)
+{
+  return getICSpreadMidPrice(puts, calls, shortStrike, longStrike, shortStrike2, longStrike2);
+}
+function spreadMidCalculator(parsed, spreadType, shortStrike, longStrike, shortStrike2, longStrike2)
+{
+  var puts = parsed.optionChain.result[0].options[0].puts;
+  var calls = parsed.optionChain.result[0].options[0].calls;
+  var spreadMidPrice = 0;
+  if (spreadType == "Put") spreadMidPrice = getPutSpreadMidPrice(puts, shortStrike, longStrike);
+  else if (spreadType == "Call") spreadMidPrice = getCallSpreadMidPrice(calls, shortStrike, longStrike);
+  else if (spreadType == "IC") spreadMidPrice = getICSpreadMidPrice(puts, calls, shortStrike, longStrike, shortStrike2, longStrike2);
+  else if (spreadType == "IB") spreadMidPrice = getIBSpreadMidPrice(puts, calls, shortStrike, longStrike, shortStrike2, longStrike2);
+  return spreadMidPrice;
+}
+
+function getTwoOptionLastPrice(optionList, shortStrike, longStrike)
+{
+    var i, longLastPrice, shortLastPrice;
+    for (i = 0; i < optionList.length; i++)
+    {
+      if (optionList[i].strike == shortStrike)
+        shortLastPrice = optionList[i].lastPrice;
+      if (optionList[i].strike == longStrike)
+        longLastPrice = optionList[i].lastPrice;   
+    }
+    return shortLastPrice - longLastPrice;
+}
+function getPutSpreadLastPrice(puts, shortStrike, longStrike)
+{
+  return getTwoOptionLastPrice(puts, shortStrike, longStrike);
+}
+function getCallSpreadLastPrice(calls, shortStrike, longStrike)
+{
+  return getTwoOptionLastPrice(calls, shortStrike, longStrike);
+}
+function getICSpreadLastPrice(puts, calls, shortStrike, longStrike, shortStrike2, longStrike2)
+{
+  return getPutSpreadLastPrice(puts, shortStrike, longStrike) + getCallSpreadLastPrice(calls, shortStrike2, longStrike2);
+}
+function getIBSpreadLastPrice(puts, calls, shortStrike, longStrike, shortStrike2, longStrike2)
+{
+  return getICSpreadLastPrice(puts, calls, shortStrike, longStrike, shortStrike2, longStrike2);
+}
+function spreadLastCalculator(parsed, spreadType, shortStrike, longStrike, shortStrike2, longStrike2)
+{
+  var puts = parsed.optionChain.result[0].options[0].puts;
+  var calls = parsed.optionChain.result[0].options[0].calls;
+  var spreadLastPrice = 0;
+  if (spreadType == "Put") spreadLastPrice = getPutSpreadLastPrice(puts, shortStrike, longStrike);
+  else if (spreadType == "Call") spreadLastPrice = getCallSpreadLastPrice(calls, shortStrike, longStrike);
+  else if (spreadType == "IC") spreadLastPrice = getICSpreadLastPrice(puts, calls, shortStrike, longStrike, shortStrike2, longStrike2);
+  else if (spreadType == "IB") spreadLastPrice = getIBSpreadLastPrice(puts, calls, shortStrike, longStrike, shortStrike2, longStrike2);
+  return spreadLastPrice;
+}
+function myFetch(queryString)
+{
+  fetch(queryString)
+  .then(function(response) {
+    return response.json();
+  })
+  .then(function(myJson) {
+    console.log(JSON.stringify(myJson));
+  });
+}
+
+function convertDate(exDate)
+{
+  var split = exDate.split('/');
+  exDate = new Date(parseInt(split[2]), parseInt(split[0])-1, parseInt(split[1])-1, '20','0','0','0');
+  return exDate.valueOf()/1000;
+}
+
+
+function getSpreadPrice(ticker, spreadType, exDate, shortStrike, longStrike, shortStrike2, longStrike2)
+{
+  var returnArray = [-1,-1];
+  console.log(exDate);
+  var exDate = convertDate(exDate);
+  console.log(exDate);
+  var queryString = "https://cors.io/?https://query1.finance.yahoo.com/v7/finance/options/" + ticker+"?date="+exDate;
+  
+  
+  var request = new XMLHttpRequest();
+  request.open('GET', queryString, false);  // `false` makes the request synchronous
+  request.send(null);
+  
+  if (request.status === 200) {
+        var returnSpreadPrice = "hello";
+  var parsed = JSON.parse(request.responseText);
+
+  returnArray[0] = spreadLastCalculator(parsed, spreadType, shortStrike, longStrike, shortStrike2, longStrike2).toFixed(2);
+  returnArray[1] = spreadMidCalculator(parsed, spreadType, shortStrike, longStrike, shortStrike2, longStrike2).toFixed(2);
+
+  return returnArray;  
+      
+  }
+  else
+  {
+     return returnArray;
+  }
+}
+</script>

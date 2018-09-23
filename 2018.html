@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+
+    <title>Trades Expiring in 2018</title>
+    <?!= include('Stylesheet'); ?>
+    <?!= include('Javascript'); ?>
+  </head>
+  <body>
+  <h1>2018 Positions</h1>  
+     <?var url = getScriptUrl();?><a href='<?=url?>?page=Index'>Current Positions</a>
+     <?var url = getScriptUrl();?><a href='<?=url?>?page=Statistics'>Statistics</a>
+
+    <table id="table2018">
+    <thead>
+    <tr>
+    </tr>
+    </thead>
+	</table>
+    <input type="button" value="Load Positions"
+      onclick="google.script.run.withSuccessHandler(set2018Trades).get2018Trades()" />
+   </body>
+</html>
+
+
+
