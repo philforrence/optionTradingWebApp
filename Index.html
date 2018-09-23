@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+
+    <title>Current Positions</title>
+    <?!= include('Stylesheet'); ?>
+    <?!= include('Javascript'); ?>
+  </head>
+  <body>
+  <h1>Current Positions</h1>  
+     <div>
+     <?var url = getScriptUrl();?><a href='<?=url?>?page=2018'>2018</a>
+     <?var url = getScriptUrl();?><a href='<?=url?>?page=Statistics'>Statistics</a>
+     </div>
+
+
+    <div>
+    <table id="theTable">
+    <thead>
+    <tr>
+    </tr>
+    </thead>
+	  </table>
+    </div>
+
+    <input type="button" value="Load Positions"
+      onclick="google.script.run.withSuccessHandler(findOpenTrades).get2018Trades()" />
+   </body>
+</html>
+
+

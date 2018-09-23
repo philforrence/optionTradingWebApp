@@ -19,12 +19,12 @@ function addCalculations(range, newCell, newRow, i)
 {
     // var spreadWidth = Math.abs(range[i][3]-range[i][4]);
     // var maxLossUnit = spreadWidth-range[i][6];
-    var maxLossTotal = calculateMaxLoss(range[i][3], range[i][4], range[i][6], range[i][5]);
-    addCell(maxLossTotal, newCell, newRow);
     var priceArray = getSpreadPrice(range[i][0], range[i][1], range[i][2], range[i][3], range[i][4], range[i+1][3], range[i+1][4]);
     addCell(priceArray[0], newCell, newRow);
     addCell(priceArray[1], newCell, newRow);
-    addCell(range[i][6] - priceArray[0], newCell, newRow);
+    addCell((range[i][6] - priceArray[0]).toFixed(2), newCell, newRow);
+    var maxLossTotal = calculateMaxLoss(range[i][3], range[i][4], range[i][6], range[i][5]);
+    addCell(maxLossTotal, newCell, newRow);
     //addCell()
 }
 function addHeader(tableName, headerName)
@@ -66,11 +66,10 @@ function findOpenTrades(range)
   for (var j = 0; j < range[0].length; j++) { 
       addHeader("theTable", range[0][j]); 
   }
-  addHeader("theTable", "Max Loss");
   addHeader("theTable", "Mid Price");
   addHeader("theTable", "Last Price");
   addHeader("theTable", "P/L");
-
+  addHeader("theTable", "Max Loss");
 
   }
   function test(range)
