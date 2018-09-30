@@ -6,6 +6,7 @@ function addCell(value, newCell, newRow)
         newCell = newRow.insertCell();
         var newText = document.createTextNode(value);
         newCell.appendChild(newText);
+        return newCell;
 }
 
 function calculateMaxLoss(shortStrike, longStrike, credit, numberOfContracts)
@@ -19,9 +20,15 @@ function addCalculations(range, newCell, newRow, i)
 {
     // var spreadWidth = Math.abs(range[i][3]-range[i][4]);
     // var maxLossUnit = spreadWidth-range[i][6];
+
+    // var midCell = addCell('', newCell, newRow);
+    // var lastCell = addCell('', newCell, newRow);
+    //var prices = getAsynchSpreadPrice(range[i][0], range[i][1], range[i][2], range[i][3], range[i][4], range[i+1][3], range[i+1][4], midCell, lastCell);
+
     var priceArray = getSpreadPrice(range[i][0], range[i][1], range[i][2], range[i][3], range[i][4], range[i+1][3], range[i+1][4]);
     addCell(priceArray[0], newCell, newRow);
     addCell(priceArray[1], newCell, newRow);
+    addCurrentSpreadPrices();
     addCell((range[i][6] - priceArray[0]).toFixed(2), newCell, newRow);
     var maxLossTotal = calculateMaxLoss(range[i][3], range[i][4], range[i][6], range[i][5]);
     addCell(maxLossTotal, newCell, newRow);
@@ -240,6 +247,43 @@ function getSpreadPrice(ticker, spreadType, exDate, shortStrike, longStrike, sho
   var queryString = "https://cors.io/?https://query1.finance.yahoo.com/v7/finance/options/" + ticker+"?date="+exDate;
   
   
+  var request = new XMLHttpRequest();
+  request.open('GET', queryString, false);  // `false` makes the request synchronous
+  request.send(null);
+  
+  if (request.status === 200) {
+        var returnSpreadPrice = "hello";
+  var parsed = JSON.parse(request.responseText);
+
+  returnArray[0] = spreadLastCalculator(parsed, spreadType, shortStrike, longStrike, shortStrike2, longStrike2).toFixed(2);
+  returnArray[1] = spreadMidCalculator(parsed, spreadType, shortStrike, longStrike, shortStrike2, longStrike2).toFixed(2);
+
+  return returnArray;  
+      
+  }
+  else
+  {
+     return returnArray;
+  }
+}
+function getAsynchSpreadPrice(ticker, spreadType, exDate, shortStrike, longStrike, shortStrike2, longStrike2)
+{
+  var returnArray = [-1,-1];
+  console.log(exDate);
+  var exDate = convertDate(exDate);
+  console.log(exDate);
+  var queryString = "https://cors.io/?https://query1.finance.yahoo.com/v7/finance/options/" + ticker+"?date="+exDate;
+  
+
+  $.getJSON(queryString)
+  .done(function(data) {
+    $('body').append(data.text);
+  })
+
+  .fail(function() {
+    $('body').append('<p>Oh no, something went wrong!</p>');
+  });
+    
   var request = new XMLHttpRequest();
   request.open('GET', queryString, false);  // `false` makes the request synchronous
   request.send(null);
