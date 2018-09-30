@@ -9,14 +9,20 @@
   </head>
   <body>
   <h1>2018</h1>  
+       <div>
+
      <?var url = getScriptUrl();?><a href='<?=url?>?page=Index'>Current Positions</a>
      <?var url = getScriptUrl();?><a href='<?=url?>?page=2018'>2018</a>
+     </div>
+
+    <div>
     <table id="stats">
     <thead>
     <tr>
     </tr>
     </thead>
-	</table>
+	  </table>
+    </div>
     <input type="button" value="Load Positions"
       onclick="google.script.run.withSuccessHandler(set2018Trades).get2018Trades()" />
    </body>

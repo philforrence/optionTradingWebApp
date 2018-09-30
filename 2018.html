@@ -9,15 +9,19 @@
   </head>
   <body>
   <h1>2018 Positions</h1>  
-     <?var url = getScriptUrl();?><a  href='<?=url?>?page=Index' class = "left">Current Positions</a>
-     <?var url = getScriptUrl();?><a href='<?=url?>?page=Statistics' class = "left">Statistics</a>
-
+     <div>
+     <?var url = getScriptUrl();?><a href='<?=url?>?page=Index'>Current Positions</a>
+     <?var url = getScriptUrl();?><a href='<?=url?>?page=Statistics'>Statistics</a>
+     </div>
+    
+    <div>
     <table id="table2018" class = "left">
     <thead>
     <tr>
     </tr>
     </thead>
-	</table>
+  	</table>
+    </div>
     <input type="button" value="Load Positions"
       onclick="google.script.run.withSuccessHandler(set2018Trades).get2018Trades()" />
    </body>
