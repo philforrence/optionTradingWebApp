@@ -232,7 +232,10 @@ function myFetch(queryString)
 function convertDate(exDate)
 {
   var split = exDate.split('/');
-  exDate = new Date(parseInt(split[2]), parseInt(split[0])-1, parseInt(split[1])-1, '20','0','0','0');
+  // if (/*today is in daylight savings time*/)
+  //   //and the exDate is not, subtract an hour
+  // else if (/*tpday is not */)
+  exDate = new Date(Date.UTC(parseInt(split[2]), parseInt(split[0])-1, parseInt(split[1]), '0','0','0','0'));
   return exDate.valueOf()/1000;
 }
 
@@ -272,6 +275,7 @@ function getAsynchSpreadPrice(ticker, spreadType, exDate, shortStrike, longStrik
   var exDate = convertDate(exDate);
   console.log(exDate);
   var queryString = "https://cors.io/?https://query1.finance.yahoo.com/v7/finance/options/" + ticker+"?date="+exDate;
+  console.log(queryString);
   
   var request = new XMLHttpRequest();
   request.onreadystatechange = function() {
