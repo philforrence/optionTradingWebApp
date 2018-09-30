@@ -293,7 +293,7 @@ function getAsynchSpreadPrice(ticker, spreadType, exDate, shortStrike, longStrik
   console.log(exDate);
   var queryString = "https://cors.io/?https://query1.finance.yahoo.com/v7/finance/options/" + ticker+"?date="+exDate;
   console.log(queryString);
-  
+  let pandLText;
   var request = new XMLHttpRequest();
   request.onreadystatechange = function() {
     if (this.readyState == 4 && this.status == 200) {
@@ -302,7 +302,12 @@ function getAsynchSpreadPrice(ticker, spreadType, exDate, shortStrike, longStrik
       returnArray[1] = spreadMidCalculator(parsed, spreadType, shortStrike, longStrike, shortStrike2, longStrike2).toFixed(2);
       midCell.innerHTML = returnArray[0];
       lastCell.innerHTML = returnArray[1];
-      pandLCell.innerHTML = "$" + ((credit - returnArray[0])*100).toFixed(2);
+
+      pandLText = ((credit - returnArray[0])*100).toFixed(2);
+      if (isNaN(pandLText)) pandLText = null;
+      else if (pandLText < 0) pandLText = "($" + Math.abs(pandLText) +")";
+      else pandLText = "$"+pandLText;
+      pandLCell.innerHTML = pandLText;
     }
     else {
       midCell.innerHTML = 'Not Responding';
