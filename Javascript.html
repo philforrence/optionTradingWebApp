@@ -24,8 +24,6 @@ function addCalculations(range, newCell, newRow, i)
     var pandLCell = addCell('', newCell, newRow);
     var maxLossCell = addCell(maxLoss(range, i), newCell, newRow);
     getAsynchSpreadPrice(range[i][0], range[i][1], range[i][2], range[i][3], range[i][4], range[i+1][3], range[i+1][4], range[i][6], midCell, lastCell, pandLCell);
-
-    
 }
 function addHeader(tableName, headerName)
 {
@@ -43,23 +41,23 @@ function findOpenTrades(range)
   var header = tab.createTHead();
 
   for (var i = 1; i < range.length; i++) {
-      if(range[i][3] == "") break;
-      if(range[i][9] == "")
+    if(range[i][3] == "") break;
+    if(range[i][9] == "")
+    {
+      newRow = tab.insertRow();
+      for (var j = 0; j < range[i].length; j++) {
+        addCell(range[i][j], newCell, newRow);
+      }        
+      addCalculations(range, newCell, newRow, i);
+      if(range[i][1] == "IB" ||range[i][1] == "IC")
       {
-          newRow = tab.insertRow();
-          for (var j = 0; j < range[i].length; j++) {
-              addCell(range[i][j], newCell, newRow);
-          }        
-          addCalculations(range, newCell, newRow, i);
-          if(range[i][1] == "IB" ||range[i][1] == "IC")
-          {
-              i++;
-              newRow = tab.insertRow();
-              for (var j = 0; j < range[i].length; j++) {
-                  addCell(range[i][j], newCell, newRow);
-              }
-          }
+        i++;
+        newRow = tab.insertRow();
+        for (var j = 0; j < range[i].length; j++) {
+          addCell(range[i][j], newCell, newRow);
+        }
       }
+    }
   }
 
   newRow = header.insertRow();     
@@ -71,63 +69,56 @@ function findOpenTrades(range)
   addHeader("theTable", "P/L");
   addHeader("theTable", "Max Loss");
   set2018Trades(range);
-  }
-  function test(range)
-  {
-  var tab = document.getElementById("theTable");
+}
+function calculateDaysInTrade(openDate, closeDate)
+{
+  let split = openDate.split('/');
+  openDate = new Date(parseInt(split[2]), parseInt(split[0])-1, parseInt(split[1]));
+  split = closeDate.split('/');
+  closeDate = new Date(parseInt(split[2]), parseInt(split[0])-1, parseInt(split[1]));
+  var timeDiff = Math.abs(closeDate.getTime() - openDate.getTime());
+  var diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24)); 
+  return diffDays;
+}
+function set2018Trades(range)
+{
+  var tab = document.getElementById("table2018");
   var newRow, newCell, newText, currentValue;
   var header = tab.createTHead();
 
   for (var i = 1; i < range.length; i++) {
-  newRow = tab.insertRow();
+    newRow = tab.insertRow();
     for (var j = 0; j < range[i].length; j++) {
-    currentValue = range[i][j];
-    newCell = newRow.insertCell();
-    newText = document.createTextNode(currentValue);
-    newCell.appendChild(newText);
-   }
-  }
+        addCell(range[i][j], newCell, newRow);
+    }
+    let pandL = ((range[i][6]-range[i][7])*100).toFixed(2);
+    let pandLText;
+    if (pandL < 0) pandLText = "($"+pandL+")";
+    else pandLText = "$"+pandL;
+    let daysInTrade = calculateDaysInTrade(range[i][8], range[i][9]);
+    addCell(pandLText, newCell, newRow);
+    addCell(daysInTrade, newCell, newRow);
 
+    let pandLDay = (parseInt(pandL)/parseInt(daysInTrade)).toFixed(2);
+    let pandLDayText;
+    if (pandL < 0) pandLDayText = "($"+pandLDay+")";
+    else pandLDayText = "$"+pandLDay;
+    addCell(pandLDayText, newCell, newRow);
+  }
 
   var tr, th;
   newRow = header.insertRow();     
   for (var j = 0; j < range[0].length; j++) {
-      tr = document.getElementById('theTable').tHead.children[0],
+      tr = document.getElementById('table2018').tHead.children[0],
       th = document.createElement('th');
       currentValue = range[0][j];
       th.innerHTML = currentValue;
       tr.appendChild(th);
   }
-}
-
-function set2018Trades(range)
-{
-var tab = document.getElementById("table2018");
-var newRow, newCell, newText, currentValue;
-var header = tab.createTHead();
-
-
-
-for (var i = 1; i < range.length; i++) {
-newRow = tab.insertRow();
-for (var j = 0; j < range[i].length; j++) {
-currentValue = range[i][j];
-newCell = newRow.insertCell();
-newText = document.createTextNode(currentValue);
-newCell.appendChild(newText);
-}
-}
-
-
-var tr, th;
-newRow = header.insertRow();     
-for (var j = 0; j < range[0].length; j++) {
-    tr = document.getElementById('table2018').tHead.children[0],
-    th = document.createElement('th');
-    currentValue = range[0][j];
-    th.innerHTML = currentValue;
-    tr.appendChild(th);
-}
+  addHeader("table2018", "P/L");
+  addHeader("table2018", "Days in Trade");
+  addHeader("table2018", "P/L/Day");
+  addHeader("table2018", "Max Loss");
 }
 
 
