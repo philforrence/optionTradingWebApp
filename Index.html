@@ -5,26 +5,34 @@
 
     <title>Current Positions</title>
     <?!= include('Stylesheet'); ?>
-    <?!= include('Javascript'); ?>
+    <?!= include('Javascript'); ?>  
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <link rel="stylesheet" href="/resources/demos/style.css">
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script>
+    $( function() {
+      $( "#tabs" ).tabs();
+    } );
+    </script>
   </head>
   <body>
-  <h1>Current Positions</h1>  
-     <div>
-     <?var url = getScriptUrl();?><a href='<?=url?>?page=2018'>2018</a>
-     <?var url = getScriptUrl();?><a href='<?=url?>?page=Statistics'>Statistics</a>
-     </div>
-    <div>
-    <table id="theTable" class = "left">
-    <thead>
-    <tr>
-    </tr>
-    </thead>
-	  </table>
+  <h1>Portfolio</h1>  
+  <body onLoad="google.script.run.withSuccessHandler(findOpenTrades).get2018Trades()">
+    <div id="tabs">
+      <ul>
+        <li><a href="#tabs-1">Current Positions</a></li>
+        <li><a href="#tabs-2">2018</a></li>
+        <li><a href="#tabs-3">Statistics</a></li>
+      </ul>
+      <div id="tabs-1">
+        <table id="theTable" class = "left">
+        </table>
+      </div>
+      <div id="tabs-2">
+        <table id="table2018" class = "left">
+        </table>
+      </div>
     </div>
-
-    <input type="button" value="Load Positions"
-      onclick="google.script.run.withSuccessHandler(findOpenTrades).get2018Trades()" />
-   </body>
+  </body>
 </html>
-
-
