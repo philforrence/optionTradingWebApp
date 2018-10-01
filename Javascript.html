@@ -212,16 +212,6 @@ function spreadLastCalculator(parsed, spreadType, shortStrike, longStrike, short
   else if (spreadType == "IB") spreadLastPrice = getIBSpreadLastPrice(puts, calls, shortStrike, longStrike, shortStrike2, longStrike2);
   return spreadLastPrice;
 }
-function myFetch(queryString)
-{
-  fetch(queryString)
-  .then(function(response) {
-    return response.json();
-  })
-  .then(function(myJson) {
-    console.log(JSON.stringify(myJson));
-  });
-}
 
 function convertDate(exDate)
 {
@@ -234,9 +224,7 @@ function convertDate(exDate)
 function getSpreadPrice(ticker, spreadType, exDate, shortStrike, longStrike, shortStrike2, longStrike2)
 {
   var returnArray = [-1,-1];
-  console.log(exDate);
   var exDate = convertDate(exDate);
-  console.log(exDate);
   var queryString = "https://cors.io/?https://query1.finance.yahoo.com/v7/finance/options/" + ticker+"?date="+exDate;
   
   
@@ -288,11 +276,8 @@ function maxLoss(range, i)
 function getAsynchSpreadPrice(ticker, spreadType, exDate, shortStrike, longStrike, shortStrike2, longStrike2, credit, midCell, lastCell, pandLCell)
 {
   var returnArray = [-1,-1];
-  console.log(exDate);
   var exDate = convertDate(exDate);
-  console.log(exDate);
   var queryString = "https://cors.io/?https://query1.finance.yahoo.com/v7/finance/options/" + ticker+"?date="+exDate;
-  console.log(queryString);
   let pandLText;
   var request = new XMLHttpRequest();
   request.onreadystatechange = function() {
