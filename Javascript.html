@@ -1,6 +1,4 @@
 <script>
-
-//<!–– MAKE THE yahoo callouts on the client side!!!!-->
 function addCell(value, newCell, newRow)
 {
         newCell = newRow.insertCell();
@@ -8,7 +6,6 @@ function addCell(value, newCell, newRow)
         newCell.appendChild(newText);
         return newCell;
 }
-
 function calculateMaxLoss(shortStrike, longStrike, credit, numberOfContracts)
 {
     var spreadWidth = Math.abs(shortStrike-longStrike);
@@ -138,20 +135,11 @@ function getTwoOptionMidPrice(optionList, shortStrike, longStrike)
     {
       if (optionList[i].strike == shortStrike)
       {
-        console.log('short strike price: ' + shortStrike);
-        console.log('bid price: ' + optionList[i].bid);
-        console.log('ask price: ' + optionList[i].ask);
         shortMidPrice = (optionList[i].bid + optionList[i].ask)/2;
-        console.log('mid price: ' + shortMidPrice); 
-
       }
       if (optionList[i].strike == longStrike)
       {
-        console.log('long strike price: ' + longStrike);
-        console.log('bid price: ' + optionList[i].bid);
-        console.log('ask price: ' + optionList[i].ask);
         longMidPrice = (optionList[i].bid + optionList[i].ask)/2;   
-        console.log('mid price: ' + longMidPrice); 
       }
     }
     return shortMidPrice - longMidPrice;
@@ -174,8 +162,6 @@ function getIBSpreadMidPrice(puts, calls, shortStrike, longStrike, shortStrike2,
 }
 function spreadMidCalculator(parsed, spreadType, shortStrike, longStrike, shortStrike2, longStrike2)
 {
-  console.log(spreadType);
-
   var puts = parsed.optionChain.result[0].options[0].puts;
   var calls = parsed.optionChain.result[0].options[0].calls;
   var spreadMidPrice = 0;
@@ -183,7 +169,6 @@ function spreadMidCalculator(parsed, spreadType, shortStrike, longStrike, shortS
   else if (spreadType == "Call") spreadMidPrice = getCallSpreadMidPrice(calls, shortStrike, longStrike);
   else if (spreadType == "IC") spreadMidPrice = getICSpreadMidPrice(puts, calls, shortStrike, longStrike, shortStrike2, longStrike2);
   else if (spreadType == "IB") spreadMidPrice = getIBSpreadMidPrice(puts, calls, shortStrike, longStrike, shortStrike2, longStrike2);
-  console.log('mid price: ' + spreadMidPrice);
   return spreadMidPrice;
 }
 
@@ -287,9 +272,18 @@ function maxLoss(range, i)
 
   return "$" + ((maxDiff-creditPerContract) * numberOfContracts*100).toFixed(2);
 }
+function formatPandL(credit, midPrice)
+{
+  let pandLText = ((credit - midPrice)*100).toFixed(2);
+  if (isNaN(pandLText)) pandLText = null;
+  else if (pandLText < 0) pandLText = "($" + Math.abs(pandLText) +")";
+  else pandLText = "$"+pandLText;
+  console.log(pandLText);
+  return pandLText;
+}
 function getAsynchSpreadPrice(ticker, spreadType, exDate, shortStrike, longStrike, shortStrike2, longStrike2, credit, midCell, lastCell, pandLCell)
 {
-  var returnArray = [-1,-1];
+  let midPrice, lastPrice;
   var exDate = convertDate(exDate);
   var queryString = "https://cors.io/?https://query1.finance.yahoo.com/v7/finance/options/" + ticker+"?date="+exDate;
   let pandLText;
@@ -297,17 +291,10 @@ function getAsynchSpreadPrice(ticker, spreadType, exDate, shortStrike, longStrik
   request.onreadystatechange = function() {
     if (this.readyState == 4 && this.status == 200) {
       var parsed = JSON.parse(request.responseText);
-      returnArray[0] = spreadLastCalculator(parsed, spreadType, shortStrike, longStrike, shortStrike2, longStrike2).toFixed(2);
-      returnArray[1] = spreadMidCalculator(parsed, spreadType, shortStrike, longStrike, shortStrike2, longStrike2).toFixed(2);
-      lastCell.innerHTML = returnArray[0];
-      midCell.innerHTML = returnArray[1];
-
-
-      pandLText = ((credit - returnArray[1])*100).toFixed(2);
-      if (isNaN(pandLText)) pandLText = null;
-      else if (pandLText < 0) pandLText = "($" + Math.abs(pandLText) +")";
-      else pandLText = "$"+pandLText;
-      pandLCell.innerHTML = pandLText;
+      midPrice = spreadMidCalculator(parsed, spreadType, shortStrike, longStrike, shortStrike2, longStrike2).toFixed(2)
+      lastCell.innerHTML = spreadLastCalculator(parsed, spreadType, shortStrike, longStrike, shortStrike2, longStrike2).toFixed(2);
+      midCell.innerHTML = midPrice;
+      pandLCell.innerHTML = formatPandL(credit, midPrice);
     }
     else {
       midCell.innerHTML = 'Not Responding';
@@ -317,6 +304,5 @@ function getAsynchSpreadPrice(ticker, spreadType, exDate, shortStrike, longStrik
   };
   request.open('GET', queryString, true);
   request.send();
-
 }
 </script>
