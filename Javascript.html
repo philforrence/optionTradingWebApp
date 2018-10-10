@@ -1,26 +1,26 @@
 <script>
 function addCell(value, newCell, newRow)
 {
-        newCell = newRow.insertCell();
-        var newText = document.createTextNode(value);
-        newCell.appendChild(newText);
-        return newCell;
+  newCell = newRow.insertCell();
+  var newText = document.createTextNode(value);
+  newCell.appendChild(newText);
+  return newCell;
 }
 function calculateMaxLoss(shortStrike, longStrike, credit, numberOfContracts)
 {
-    var spreadWidth = Math.abs(shortStrike-longStrike);
-    var maxLossUnit = spreadWidth-credit;
-    var maxLossTotal = maxLossUnit*numberOfContracts;
-    return maxLossTotal.toFixed(2);
+  var spreadWidth = Math.abs(shortStrike-longStrike);
+  var maxLossUnit = spreadWidth-credit;
+  var maxLossTotal = maxLossUnit*numberOfContracts;
+  return maxLossTotal.toFixed(2);
 }
 
 function addCalculations(range, newCell, newRow, i)
 {
-    var midCell = addCell('', newCell, newRow);
-    var lastCell = addCell('', newCell, newRow);
-    var pandLCell = addCell('', newCell, newRow);
-    var maxLossCell = addCell(maxLoss(range, i), newCell, newRow);
-    getAsynchSpreadPrice(range[i][0], range[i][1], range[i][2], range[i][3], range[i][4], range[i+1][3], range[i+1][4], range[i][6], midCell, lastCell, pandLCell);
+  var midCell = addCell('', newCell, newRow);
+  var lastCell = addCell('', newCell, newRow);
+  var pandLCell = addCell('', newCell, newRow);
+  var maxLossCell = addCell(maxLoss(range, i), newCell, newRow);
+  getAsynchSpreadPrice(range[i][0], range[i][1], range[i][2], range[i][3], range[i][4], range[i+1][3], range[i+1][4], range[i][6], midCell, lastCell, pandLCell);
 }
 function addHeader(tableName, headerName)
 {
@@ -124,10 +124,6 @@ function set2018Trades(range)
   addHeader("table2018", "P/L/Day");
   addHeader("table2018", "Max Loss");
 }
-
-
-
-
 function getTwoOptionMidPrice(optionList, shortStrike, longStrike)
 {
     var i, longMidPrice, shortMidPrice;
@@ -135,21 +131,33 @@ function getTwoOptionMidPrice(optionList, shortStrike, longStrike)
     {
       if (optionList[i].strike == shortStrike)
       {
+        console.log('short strike price: ' + shortStrike);
+        console.log('bid price: ' + optionList[i].bid);
+        console.log('ask price: ' + optionList[i].ask);
         shortMidPrice = (optionList[i].bid + optionList[i].ask)/2;
+        console.log('short mid price: ' + shortMidPrice); 
+
       }
       if (optionList[i].strike == longStrike)
       {
+        console.log('long strike price: ' + longStrike);
+        console.log('bid price: ' + optionList[i].bid);
+        console.log('ask price: ' + optionList[i].ask);
         longMidPrice = (optionList[i].bid + optionList[i].ask)/2;   
+        console.log('long mid price: ' + longMidPrice); 
       }
     }
+    console.log('twoOptionMidPrice: ' + (shortMidPrice - longMidPrice));
     return shortMidPrice - longMidPrice;
 }
 function getPutSpreadMidPrice(puts, shortStrike, longStrike)
 {
+  console.log('puts');
   return getTwoOptionMidPrice(puts, shortStrike, longStrike);
 }
 function getCallSpreadMidPrice(calls, shortStrike, longStrike)
 {
+  console.log('calls');
   return getTwoOptionMidPrice(calls, shortStrike, longStrike);
 }
 function getICSpreadMidPrice(puts, calls, shortStrike, longStrike, shortStrike2, longStrike2)
@@ -162,6 +170,8 @@ function getIBSpreadMidPrice(puts, calls, shortStrike, longStrike, shortStrike2,
 }
 function spreadMidCalculator(parsed, spreadType, shortStrike, longStrike, shortStrike2, longStrike2)
 {
+  console.log(spreadType);
+
   var puts = parsed.optionChain.result[0].options[0].puts;
   var calls = parsed.optionChain.result[0].options[0].calls;
   var spreadMidPrice = 0;
@@ -169,6 +179,7 @@ function spreadMidCalculator(parsed, spreadType, shortStrike, longStrike, shortS
   else if (spreadType == "Call") spreadMidPrice = getCallSpreadMidPrice(calls, shortStrike, longStrike);
   else if (spreadType == "IC") spreadMidPrice = getICSpreadMidPrice(puts, calls, shortStrike, longStrike, shortStrike2, longStrike2);
   else if (spreadType == "IB") spreadMidPrice = getIBSpreadMidPrice(puts, calls, shortStrike, longStrike, shortStrike2, longStrike2);
+  console.log('mid price: ' + spreadMidPrice);
   return spreadMidPrice;
 }
 
@@ -276,8 +287,11 @@ function formatPandL(credit, midPrice)
 {
   let pandLText = ((credit - midPrice)*100).toFixed(2);
   if (isNaN(pandLText)) pandLText = null;
-  else if (pandLText < 0) pandLText = "($" + Math.abs(pandLText) +")";
-  else pandLText = "$"+pandLText;
+  else if (pandLText < 0) pandLText = "<p id=\"negative\"> ($" + Math.abs(pandLText).toFixed(2) +") </p>";
+  else pandLText = "<p id=\"positive\"> $"+pandLText +  " </p>";
+
+  // else if (pandLText < 0) pandLText = "<span id = \"negative\"> ($" + Math.abs(pandLText).toFixed(2) +") </span>";
+  // else pandLText = "<span id = \"positive\"> $"+pandLText +  " </span>";
   console.log(pandLText);
   return pandLText;
 }
