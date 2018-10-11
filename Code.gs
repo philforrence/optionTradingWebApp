@@ -92,11 +92,24 @@ function getTwoOptionMidPrice(optionList, shortStrike, longStrike)
     var i, longMidPrice, shortMidPrice;
     for (i = 0; i < optionList.length; i++)
     {
+
       if (optionList[i].strike == shortStrike)
+      {
+        console.log('short');
+        console.log('bid: ' + optionList[i].bid);
+        console.log('ask: ' + optionList[i].ask);
+     
         shortMidPrice = (optionList[i].bid + optionList[i].ask)/2;
+      }
       if (optionList[i].strike == longStrike)
+      {
+        console.log('long');
+        console.log('bid: ' + optionList[i].bid);
+        console.log('ask: ' + optionList[i].ask);
         longMidPrice = (optionList[i].bid + optionList[i].ask)/2;    
+      }
     }
+    console.log('mid: ' + shortMidPrice-longMidPrice);
     return shortMidPrice - longMidPrice;
 }
 function getPutSpreadMidPrice(puts, shortStrike, longStrike)
@@ -168,6 +181,7 @@ function spreadLastCalculator(parsed, spreadType, shortStrike, longStrike, short
 }
 function getSpreadPrice(ticker, spreadType, exDate, shortStrike, longStrike, shortStrike2, longStrike2, type)
 {
+  console.log(ticker + ' ' + spreadType);
   var queryString = "https://query1.finance.yahoo.com/v7/finance/options/" + ticker+"?date="+exDate;
   var data = UrlFetchApp.fetch(queryString);
   

@@ -2,7 +2,6 @@
 <html>
   <head>
     <base target="_top">
-
     <title>Current Positions</title>
     <?!= include('Stylesheet'); ?>
     <?!= include('Javascript'); ?>  
@@ -17,7 +16,7 @@
     </script>
   </head>
   <h1>Portfolio</h1>  
-  <body onLoad="google.script.run.withSuccessHandler(findOpenTrades).get2018Trades()">
+  <body onLoad="google.script.run.withSuccessHandler(loadTables).get2018Trades()">
     <div id="tabs">
       <ul>
         <li><a href="#tabs-1">Current Positions</a></li>
@@ -30,6 +29,10 @@
       </div>
       <div id="tabs-2">
         <table id="table2018" class = "left">
+        </table>
+      </div>
+      <div id="tabs-3">
+        <table id="stats" class = "left">
         </table>
       </div>
     </div>
