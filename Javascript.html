@@ -1,4 +1,163 @@
 <script>
+/**
+* @param range (array[array[]]) - Sheets cells arranged like
+* 0 - Ticker Symbol
+* 1 - Ticker Spread 
+* 2 - Ex-Date 
+* 3 - Short 
+* 4 - Long          
+* 5 - Number of Contracts
+* 6 - Open Price
+* 7 - Close Price
+* 8 - Open Date
+* 9 - Close Date
+*/
+function loadTables(range)
+{
+  findOpenTrades(range);
+  set2018Trades(range);
+  setStats(range);
+}
+/**
+* @param range (array[array[]]) - Sheets cells arranged like
+* 0 - Ticker Symbol
+* 1 - Ticker Spread 
+* 2 - Ex-Date 
+* 3 - Short 
+* 4 - Long          
+* 5 - Number of Contracts
+* 6 - Open Price
+* 7 - Close Price
+* 8 - Open Date
+* 9 - Close Date
+*/
+function findOpenTrades(range)
+{
+  var tableString = "theTable";
+  var tab = document.getElementById(tableString);
+  var newRow, newCell;
+  var header = tab.createTHead();
+
+  for (var i = 1; i < range.length; i++) {
+    if(range[i][3] == "") break;
+    if(range[i][9] == "")
+    {
+      newRow = tab.insertRow();
+      for (var j = 0; j < range[i].length; j++) {
+        if(checkClosingData(j)) continue;
+        addCell(range[i][j], newCell, newRow);
+      }        
+      addCalculations(range, newCell, newRow, i);
+      if(range[i][1] == "IB" ||range[i][1] == "IC")
+      {
+        i++;
+        newRow = tab.insertRow();
+        for (var j = 0; j < range[i].length; j++) {
+          if(checkClosingData(j)) continue;
+          addCell(range[i][j], newCell, newRow);
+        }
+      }
+    }
+  }
+
+  newRow = header.insertRow();     
+  for (var j = 0; j < range[0].length; j++) { 
+      if(checkClosingData(j)) continue;
+      addHeader(tableString, range[0][j]); 
+  }
+  addHeader(tableString, "Mid Price");
+  addHeader(tableString, "Last Price");
+  addHeader(tableString, "P/L");
+  addHeader(tableString, "Max Loss");
+}
+/**
+* @param range (array[array[]]) - Sheets cells arranged like
+* 0 - Ticker Symbol
+* 1 - Ticker Spread 
+* 2 - Ex-Date 
+* 3 - Short 
+* 4 - Long          
+* 5 - Number of Contracts
+* 6 - Open Price
+* 7 - Close Price
+* 8 - Open Date
+* 9 - Close Date
+*/
+function set2018Trades(range)
+{
+  var tableString = "table2018";
+  var tab = document.getElementById(tableString);
+  var newRow, newCell, newText, currentValue;
+  var header = tab.createTHead();
+
+  for (var i = 1; i < range.length; i++) {
+    newRow = tab.insertRow();
+    for (var j = 0; j < range[i].length; j++) {
+        addCell(range[i][j], newCell, newRow);
+    }
+    let pandL = ((range[i][6]-range[i][7])*100).toFixed(2);
+    let pandLText;
+    if (pandL < 0) pandLText = "($"+pandL+")";
+    else pandLText = "$"+pandL;
+    let daysInTrade = calculateDaysInTrade(range[i][8], range[i][9]);
+    addCell(pandLText, newCell, newRow);
+    addCell(daysInTrade, newCell, newRow);
+
+    let pandLDay = (parseInt(pandL)/parseInt(daysInTrade)).toFixed(2);
+    let pandLDayText;
+    if (pandL < 0) pandLDayText = "($"+pandLDay+")";
+    else pandLDayText = "$"+pandLDay;
+    addCell(pandLDayText, newCell, newRow);
+  }
+
+  var tr, th;
+  newRow = header.insertRow();     
+  for (var j = 0; j < range[0].length; j++) {
+      tr = document.getElementById('table2018').tHead.children[0],
+      th = document.createElement('th');
+      currentValue = range[0][j];
+      th.innerHTML = currentValue;
+      tr.appendChild(th);
+  }
+  addHeader(tableString, "P/L");
+  addHeader(tableString, "Days in Trade");
+  addHeader(tableString, "P/L/Day");
+  addHeader(tableString, "Max Loss");
+}
+/**
+* @param range (array[array[]]) - Sheets cells arranged like
+* 0 - Ticker Symbol
+* 1 - Ticker Spread 
+* 2 - Ex-Date 
+* 3 - Short 
+* 4 - Long          
+* 5 - Number of Contracts
+* 6 - Open Price
+* 7 - Close Price
+* 8 - Open Date
+* 9 - Close Date
+*/
+function setStats(range)
+{
+  var tableString = "stats";
+  var tab = document.getElementById(tableString);
+  var newRow, newCell;
+  var header = tab.createTHead();
+  let pandLCumulative = 0;
+
+  for (var i = 1; i < range.length; i++) {
+      let openPrice = range[i][6];
+      let closePrice = range[i][7];
+      if(closePrice === '') continue;
+      console.log('close Price: '+closePrice);
+      let numberOfContracts = range[i][5];
+      pandLCumulative += (openPrice - closePrice)*numberOfContracts*100;
+      console.log(pandLCumulative);
+  }
+  newRow = tab.insertRow();
+  addCell("$"+pandLCumulative, newCell, newRow);
+  addHeader(tableString, "P/L");
+}
 function addCell(value, newCell, newRow)
 {
   newCell = newRow.insertCell();
@@ -35,45 +194,9 @@ function checkClosingData(i)
   if (i===7||i===9) return true;
   return false;
 }
-function findOpenTrades(range)
-{
-  var tab = document.getElementById("theTable");
-  var newRow, newCell;
-  var header = tab.createTHead();
 
-  for (var i = 1; i < range.length; i++) {
-    if(range[i][3] == "") break;
-    if(range[i][9] == "")
-    {
-      newRow = tab.insertRow();
-      for (var j = 0; j < range[i].length; j++) {
-        if(checkClosingData(j)) continue;
-        addCell(range[i][j], newCell, newRow);
-      }        
-      addCalculations(range, newCell, newRow, i);
-      if(range[i][1] == "IB" ||range[i][1] == "IC")
-      {
-        i++;
-        newRow = tab.insertRow();
-        for (var j = 0; j < range[i].length; j++) {
-          if(checkClosingData(j)) continue;
-          addCell(range[i][j], newCell, newRow);
-        }
-      }
-    }
-  }
 
-  newRow = header.insertRow();     
-  for (var j = 0; j < range[0].length; j++) { 
-      if(checkClosingData(j)) continue;
-      addHeader("theTable", range[0][j]); 
-  }
-  addHeader("theTable", "Mid Price");
-  addHeader("theTable", "Last Price");
-  addHeader("theTable", "P/L");
-  addHeader("theTable", "Max Loss");
-  set2018Trades(range);
-}
+
 function calculateDaysInTrade(openDate, closeDate)
 {
   let split = openDate.split('/');
@@ -84,46 +207,7 @@ function calculateDaysInTrade(openDate, closeDate)
   var diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24)); 
   return diffDays;
 }
-function set2018Trades(range)
-{
-  var tab = document.getElementById("table2018");
-  var newRow, newCell, newText, currentValue;
-  var header = tab.createTHead();
 
-  for (var i = 1; i < range.length; i++) {
-    newRow = tab.insertRow();
-    for (var j = 0; j < range[i].length; j++) {
-        addCell(range[i][j], newCell, newRow);
-    }
-    let pandL = ((range[i][6]-range[i][7])*100).toFixed(2);
-    let pandLText;
-    if (pandL < 0) pandLText = "($"+pandL+")";
-    else pandLText = "$"+pandL;
-    let daysInTrade = calculateDaysInTrade(range[i][8], range[i][9]);
-    addCell(pandLText, newCell, newRow);
-    addCell(daysInTrade, newCell, newRow);
-
-    let pandLDay = (parseInt(pandL)/parseInt(daysInTrade)).toFixed(2);
-    let pandLDayText;
-    if (pandL < 0) pandLDayText = "($"+pandLDay+")";
-    else pandLDayText = "$"+pandLDay;
-    addCell(pandLDayText, newCell, newRow);
-  }
-
-  var tr, th;
-  newRow = header.insertRow();     
-  for (var j = 0; j < range[0].length; j++) {
-      tr = document.getElementById('table2018').tHead.children[0],
-      th = document.createElement('th');
-      currentValue = range[0][j];
-      th.innerHTML = currentValue;
-      tr.appendChild(th);
-  }
-  addHeader("table2018", "P/L");
-  addHeader("table2018", "Days in Trade");
-  addHeader("table2018", "P/L/Day");
-  addHeader("table2018", "Max Loss");
-}
 function getTwoOptionMidPrice(optionList, shortStrike, longStrike)
 {
     var i, longMidPrice, shortMidPrice;
@@ -131,33 +215,33 @@ function getTwoOptionMidPrice(optionList, shortStrike, longStrike)
     {
       if (optionList[i].strike == shortStrike)
       {
-        console.log('short strike price: ' + shortStrike);
-        console.log('bid price: ' + optionList[i].bid);
-        console.log('ask price: ' + optionList[i].ask);
+        //console.log('short strike price: ' + shortStrike);
+        //console.log('bid price: ' + optionList[i].bid);
+        //console.log('ask price: ' + optionList[i].ask);
         shortMidPrice = (optionList[i].bid + optionList[i].ask)/2;
-        console.log('short mid price: ' + shortMidPrice); 
+        //console.log('short mid price: ' + shortMidPrice); 
 
       }
       if (optionList[i].strike == longStrike)
       {
-        console.log('long strike price: ' + longStrike);
-        console.log('bid price: ' + optionList[i].bid);
-        console.log('ask price: ' + optionList[i].ask);
+        //console.log('long strike price: ' + longStrike);
+        //console.log('bid price: ' + optionList[i].bid);
+        //console.log('ask price: ' + optionList[i].ask);
         longMidPrice = (optionList[i].bid + optionList[i].ask)/2;   
-        console.log('long mid price: ' + longMidPrice); 
+        //console.log('long mid price: ' + longMidPrice); 
       }
     }
-    console.log('twoOptionMidPrice: ' + (shortMidPrice - longMidPrice));
+    //console.log('twoOptionMidPrice: ' + (shortMidPrice - longMidPrice));
     return shortMidPrice - longMidPrice;
 }
 function getPutSpreadMidPrice(puts, shortStrike, longStrike)
 {
-  console.log('puts');
+  //console.log('puts');
   return getTwoOptionMidPrice(puts, shortStrike, longStrike);
 }
 function getCallSpreadMidPrice(calls, shortStrike, longStrike)
 {
-  console.log('calls');
+  //console.log('calls');
   return getTwoOptionMidPrice(calls, shortStrike, longStrike);
 }
 function getICSpreadMidPrice(puts, calls, shortStrike, longStrike, shortStrike2, longStrike2)
@@ -170,7 +254,7 @@ function getIBSpreadMidPrice(puts, calls, shortStrike, longStrike, shortStrike2,
 }
 function spreadMidCalculator(parsed, spreadType, shortStrike, longStrike, shortStrike2, longStrike2)
 {
-  console.log(spreadType);
+  //console.log(spreadType);
 
   var puts = parsed.optionChain.result[0].options[0].puts;
   var calls = parsed.optionChain.result[0].options[0].calls;
@@ -179,7 +263,7 @@ function spreadMidCalculator(parsed, spreadType, shortStrike, longStrike, shortS
   else if (spreadType == "Call") spreadMidPrice = getCallSpreadMidPrice(calls, shortStrike, longStrike);
   else if (spreadType == "IC") spreadMidPrice = getICSpreadMidPrice(puts, calls, shortStrike, longStrike, shortStrike2, longStrike2);
   else if (spreadType == "IB") spreadMidPrice = getIBSpreadMidPrice(puts, calls, shortStrike, longStrike, shortStrike2, longStrike2);
-  console.log('mid price: ' + spreadMidPrice);
+  //console.log('mid price: ' + spreadMidPrice);
   return spreadMidPrice;
 }
 
