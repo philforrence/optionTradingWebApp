@@ -233,7 +233,7 @@
     tr = document.getElementById(tableName).tHead.children[0],
     th = document.createElement('th');
     let n = document.getElementById(tableName).rows[0].cells.length;
-    console.log(tableName + ": " + n);
+    //console.log(tableName + ": " + n);
     th.innerHTML = headerName;
     th.onclick = function () 
     {
@@ -536,7 +536,6 @@
   }
   function greaterThan(x,y)
   { 
-    console.log('enter')
     let xString = x.innerHTML;
     let yString = y.innerHTML;
     if (xString.includes("/")) return convertDate(xString) > convertDate(yString);
@@ -559,11 +558,47 @@
   * @Description - Sorting algorithm. It is NOT an efficient sorting algorithm but it's simple to understand and for small datasets like this is fine
   *
   * @param tableString (text) - name of table element to be sorted
+  * @param n (int) - column of table by which to sort
+  *
+  * @return (null)
+  */
+  function highlightColumn(tableString, n)
+  {
+    console.log('in method');
+    let table = document.getElementById(tableString);
+    let rows = table.rows;
+
+    let headerRow = rows[0].getElementsByTagName("TH");
+    console.log(headerRow);
+
+    for (let i = 0; i < headerRow.length; i++)
+    {
+      console.log(i);
+      let colHeader = headerRow[i].innerHTML;
+      console.log(colHeader);
+      if (colHeader.includes('>'))
+      {
+        let first = colHeader.split('>');
+        let second = first[1].split('<');
+        headerRow[i].innerHTML = second[0];
+      }
+    }
+    console.log('after loop');
+    let x = rows[0].getElementsByTagName("TH")[n];
+    let xText = x.innerHTML;
+    x.innerHTML = "<span id=\"blue\"> " + xText + " </span>";
+  }
+     /**
+  * @Description - Sorting algorithm. It is NOT an efficient sorting algorithm but it's simple to understand and for small datasets like this is fine
+  *
+  * @param tableString (text) - name of table element to be sorted
+  * @param n (int) - column of table by which to sort
   *
   * @return (null)
   */
   function sortTable(tableString, n = 2) 
   {
+  highlightColumn(tableString, n);
   var table, rows, switching, i, x, y, shouldSwitch;
   let xSpreadType, ySpreadType;
   table = document.getElementById(tableString);
