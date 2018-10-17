@@ -542,17 +542,15 @@
     else if (xString.match(/[a-z]/i)) return xString.toLowerCase() > yString.toLowerCase();
     else if (xString.includes("$")) 
     {
-      xString.replace("$", "");
-      xString.replace(")", "");
-      xString.replace("(", "");
-      yString.replace("$", "");
-      yString.replace(")", "");
-      yString.replace("(", "");
-      console.log(xString);
-      console.log(yString);
-      return xString.valueOf() > yString.valueOf();
+      xString = xString.split("$")[1];
+      xString = xString.split(")")[0];
+      yString = yString.split("$")[1];
+      yString = yString.split(")")[0];
+      console.log(xString.valueOf() + ' > ' + yString.valueOf());
+      console.log(xString.valueOf() > yString.valueOf());
+      return +xString.valueOf() > +yString.valueOf();
     }
-    else return xString.valueOf() > yString.valueOf();
+    else return +xString.valueOf() > +yString.valueOf();
   }
    /**
   * @Description - Sorting algorithm. It is NOT an efficient sorting algorithm but it's simple to understand and for small datasets like this is fine
@@ -564,18 +562,14 @@
   */
   function highlightColumn(tableString, n)
   {
-    console.log('in method');
     let table = document.getElementById(tableString);
     let rows = table.rows;
 
     let headerRow = rows[0].getElementsByTagName("TH");
-    console.log(headerRow);
 
     for (let i = 0; i < headerRow.length; i++)
     {
-      console.log(i);
       let colHeader = headerRow[i].innerHTML;
-      console.log(colHeader);
       if (colHeader.includes('>'))
       {
         let first = colHeader.split('>');
@@ -583,7 +577,6 @@
         headerRow[i].innerHTML = second[0];
       }
     }
-    console.log('after loop');
     let x = rows[0].getElementsByTagName("TH")[n];
     let xText = x.innerHTML;
     x.innerHTML = "<span id=\"blue\"> " + xText + " </span>";
