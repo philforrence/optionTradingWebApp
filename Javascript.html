@@ -470,6 +470,7 @@
   */
   function formatPandL(credit, midPrice)
   {
+    if(isNaN(midPrice)) return 'N/A';
     let pandLText = ((credit - midPrice)*100).toFixed(2);
     if (isNaN(pandLText)) pandLText = null;
     else if (pandLText < 0) pandLText = "<span id=\"negative\"> ($" + Math.abs(pandLText).toFixed(2) +") </span>";
@@ -536,15 +537,19 @@
   }
   function greaterThan(x,y)
   { 
-    let xString = x.innerHTML;
-    let yString = y.innerHTML;
+    let xString = stripTag(x);
+    let yString = stripTag(y);
     if (xString.includes("/")) return convertDate(xString) > convertDate(yString);
     else if (xString.match(/[a-z]/i)) return xString.toLowerCase() > yString.toLowerCase();
     else if (xString.includes("$")) 
     {
+
       xString = xString.split("$")[1];
+      if (xString.includes(")")) xString = "-"+xString;
       xString = xString.split(")")[0];
+
       yString = yString.split("$")[1];
+      if (yString.includes(")")) yString = "-"+yString;
       yString = yString.split(")")[0];
       console.log(xString.valueOf() + ' > ' + yString.valueOf());
       console.log(xString.valueOf() > yString.valueOf());
@@ -562,6 +567,7 @@
   */
   function highlightColumn(tableString, n)
   {
+
     let table = document.getElementById(tableString);
     let rows = table.rows;
 
@@ -569,17 +575,23 @@
 
     for (let i = 0; i < headerRow.length; i++)
     {
-      let colHeader = headerRow[i].innerHTML;
-      if (colHeader.includes('>'))
-      {
-        let first = colHeader.split('>');
-        let second = first[1].split('<');
-        headerRow[i].innerHTML = second[0];
-      }
+      headerRow[i].innerHTML = stripTag(headerRow[i]);
     }
     let x = rows[0].getElementsByTagName("TH")[n];
     let xText = x.innerHTML;
     x.innerHTML = "<span id=\"blue\"> " + xText + " </span>";
+  }
+
+  function stripTag(htmlElement)
+  {
+     let colHeader = htmlElement.innerHTML;
+     if (colHeader.includes('>'))
+     {
+       let first = colHeader.split('>');
+       let second = first[1].split('<');
+       return second[0];
+     }
+     else return colHeader;
   }
      /**
   * @Description - Sorting algorithm. It is NOT an efficient sorting algorithm but it's simple to understand and for small datasets like this is fine
@@ -591,6 +603,8 @@
   */
   function sortTable(tableString, n = 2) 
   {
+  console.log(n);
+
   highlightColumn(tableString, n);
   var table, rows, switching, i, x, y, shouldSwitch;
   let xSpreadType, ySpreadType;
