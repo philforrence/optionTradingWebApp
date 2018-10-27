@@ -87,118 +87,160 @@ function getCurrentPositions()
   return range;
 }
 
-function getTwoOptionMidPrice(optionList, shortStrike, longStrike)
-{
-    var i, longMidPrice, shortMidPrice;
-    for (i = 0; i < optionList.length; i++)
-    {
-
-      if (optionList[i].strike == shortStrike)
+  /**
+  * @Description - Gets the midprice of a two option spread where one strike is short (sold) and the other is long (bought)
+  *
+  * @param optionList (array[object]) - array of objects containing, among other things, the bid and ask price of each option
+  * @param shortStrike (int) - integer representing shortStrike
+  * @param longStrike (int) - integer representing longStrike
+  *
+  * @return (array[float]) - returns a two element array of [mid price, last price] of an option spread
+  */
+  function getTwoOptionMidPrice(options, type, shortStrike, longStrike)
+  {
+      let i, shortMidPrice, longMidPrice;
+      let shortLastPrice, longLastPrice;
+      for (i = 0; i < option.length; i++)
       {
-        console.log('short');
-        console.log('bid: ' + optionList[i].bid);
-        console.log('ask: ' + optionList[i].ask);
-     
-        shortMidPrice = (optionList[i].bid + optionList[i].ask)/2;
+        if (options[i].option_type.toLowerCase() !== type) continue;
+        if (options[i].strike == shortStrike)
+        {
+          shortLastPrice = option[i].last;
+          shortMidPrice = (option[i].bid + option[i].ask)/2;
+        }
+        if (option[i].strike == longStrike)
+        {
+          longLastPrice = option[i].last;   
+          longMidPrice = (option[i].bid + option[i].ask)/2;   
+        }
       }
-      if (optionList[i].strike == longStrike)
-      {
-        console.log('long');
-        console.log('bid: ' + optionList[i].bid);
-        console.log('ask: ' + optionList[i].ask);
-        longMidPrice = (optionList[i].bid + optionList[i].ask)/2;    
-      }
-    }
-    console.log('mid: ' + shortMidPrice-longMidPrice);
-    return shortMidPrice - longMidPrice;
-}
-function getPutSpreadMidPrice(puts, shortStrike, longStrike)
-{
-  return getTwoOptionMidPrice(puts, shortStrike, longStrike);
-}
-function getCallSpreadMidPrice(calls, shortStrike, longStrike)
-{
-  return getTwoOptionMidPrice(calls, shortStrike, longStrike);
-}
-function getICSpreadMidPrice(puts, calls, shortStrike, longStrike, shortStrike2, longStrike2)
-{
-  return getPutSpreadMidPrice(puts, shortStrike, longStrike) + getCallSpreadMidPrice(calls, shortStrike2, longStrike2);
-}
-function getIBSpreadMidPrice(puts, calls, shortStrike, longStrike, shortStrike2, longStrike2)
-{
-  return getICSpreadMidPrice(puts, calls, shortStrike, longStrike, shortStrike2, longStrike2);
-}
-function spreadMidCalculator(parsed, spreadType, shortStrike, longStrike, shortStrike2, longStrike2)
-{
-  var puts = parsed.optionChain.result[0].options[0].puts;
-  var calls = parsed.optionChain.result[0].options[0].calls;
-  var spreadMidPrice = 0;
-  if (spreadType == "Put") spreadMidPrice = getPutSpreadMidPrice(puts, shortStrike, longStrike);
-  else if (spreadType == "Call") spreadMidPrice = getCallSpreadMidPrice(calls, shortStrike, longStrike);
-  else if (spreadType == "IC") spreadMidPrice = getICSpreadMidPrice(puts, calls, shortStrike, longStrike, shortStrike2, longStrike2);
-  else if (spreadType == "IB") spreadMidPrice = getIBSpreadMidPrice(puts, calls, shortStrike, longStrike, shortStrike2, longStrike2);
-  return spreadMidPrice;
-}
+      return [(shortMidPrice - longMidPrice).toFixed(2), (shortLastPrice - longLastPrice).toFixed(2)];
+  }
+  /**
+  * @Description - Gets the midprice of a put spread
+  *
+  * @param puts (array[object]) - array of objects representing put options containing, among other things, the bid and ask price of each option
+  * @param shortStrike (int) - integer representing shortStrike
+  * @param longStrike (int) - integer representing longStrike
+  *
+  * @return (array[float]) - returns a two element array of [mid price, last price] of a put spread
+  */
+  function getPutSpreadMidPrice(options, shortStrike, longStrike)
+  {
+    return getTwoOptionMidPrice(options, "put", shortStrike, longStrike);
+  }
 
-function getTwoOptionLastPrice(optionList, shortStrike, longStrike)
-{
-    var i, longLastPrice, shortLastPrice;
-    for (i = 0; i < optionList.length; i++)
-    {
-      if (optionList[i].strike == shortStrike)
-        shortLastPrice = optionList[i].lastPrice;
-      if (optionList[i].strike == longStrike)
-        longLastPrice = optionList[i].lastPrice;   
-    }
-    return shortLastPrice - longLastPrice;
-}
-function getPutSpreadLastPrice(puts, shortStrike, longStrike)
-{
-  return getTwoOptionLastPrice(puts, shortStrike, longStrike);
-}
-function getCallSpreadLastPrice(calls, shortStrike, longStrike)
-{
-  return getTwoOptionLastPrice(calls, shortStrike, longStrike);
-}
-function getICSpreadLastPrice(puts, calls, shortStrike, longStrike, shortStrike2, longStrike2)
-{
-  return getPutSpreadLastPrice(puts, shortStrike, longStrike) + getCallSpreadLastPrice(calls, shortStrike2, longStrike2);
-}
-function getIBSpreadLastPrice(puts, calls, shortStrike, longStrike, shortStrike2, longStrike2)
-{
-  return getICSpreadLastPrice(puts, calls, shortStrike, longStrike, shortStrike2, longStrike2);
-}
-function spreadLastCalculator(parsed, spreadType, shortStrike, longStrike, shortStrike2, longStrike2)
-{
-  var puts = parsed.optionChain.result[0].options[0].puts;
-  var calls = parsed.optionChain.result[0].options[0].calls;
-  var spreadLastPrice = 0;
-  if (spreadType == "Put") spreadLastPrice = getPutSpreadLastPrice(puts, shortStrike, longStrike);
-  else if (spreadType == "Call") spreadLastPrice = getCallSpreadLastPrice(calls, shortStrike, longStrike);
-  else if (spreadType == "IC") spreadLastPrice = getICSpreadLastPrice(puts, calls, shortStrike, longStrike, shortStrike2, longStrike2);
-  else if (spreadType == "IB") spreadLastPrice = getIBSpreadLastPrice(puts, calls, shortStrike, longStrike, shortStrike2, longStrike2);
-  return spreadLastPrice;
-}
-function getSpreadPrice(ticker, spreadType, exDate, shortStrike, longStrike, shortStrike2, longStrike2, type)
-{
-  console.log(ticker + ' ' + spreadType);
-  var queryString = "https://query1.finance.yahoo.com/v7/finance/options/" + ticker+"?date="+exDate;
-  var data = UrlFetchApp.fetch(queryString);
+  /**
+  * @Description - Gets the mid price of a call spread
+  *
+  * @param calls (array[object]) - array of objects representing call options containing, among other things, the bid and ask price of each option
+  * @param shortStrike (int) - integer representing shortStrike
+  * @param longStrike (int) - integer representing longStrike
+  *
+  * @return (array[float]) - returns a two element array of [mid price, last price] of a call spread
+  */
+  function getCallSpreadMidPrice(options, shortStrike, longStrike)
+  {
+    //console.log('calls');
+    return getTwoOptionMidPrice(options, "call", shortStrike, longStrike);
+  }
   
-  
-  var jsonData = data.getContentText();
-  var parsed = JSON.parse(jsonData);
-  
-  var returnSpreadPrice = "hello";
-  if (type=="Last") returnSpreadPrice = spreadLastCalculator(parsed, spreadType, shortStrike, longStrike, shortStrike2, longStrike2);
-  else if (type == "Mid") returnSpreadPrice = spreadMidCalculator(parsed, spreadType, shortStrike, longStrike, shortStrike2, longStrike2);
-  
-  if (isNaN(returnSpreadPrice)) returnSpreadPrice = 0;
-  return returnSpreadPrice;
+  /**
+  * @Description - Gets the mid price of an Iron Condor
+  *
+  * @param puts (array[object]) - array of objects representing call options containing, among other things, the bid and ask price of each option
+  * @param calls (array[object]) - array of objects representing call options containing, among other things, the bid and ask price of each option
+  *
+  * @param shortStrike (int) - integer representing put shortStrike
+  * @param longStrike (int) - integer representing put longStrike
+  *
+  * @param shortStrike2 (int) - integer representing call shortStrike
+  * @param longStrike2 (int) - integer representing call longStrike
+  *
+  * @return (array[float]) - returns a two element array of [mid price, last price] of an Iron Condor spread
+  */
+  function getICSpreadMidPrice(options, shortStrike, longStrike, shortStrike2, longStrike2)
+  {
+    let putSpread = getPutSpreadMidPrice(options, shortStrike, longStrike);
+    let callSpread = getCallSpreadMidPrice(options, shortStrike2, longStrike2);
+    return [(+putSpread[0] + +callSpread[0]).toFixed(2), (+putSpread[1] + +callSpread[1]).toFixed(2)];
+  }
 
+  /**
+  * @Description - Gets the mid price of an Iron Butterfly
+  *
+  * @param puts (array[object]) - array of objects representing call options containing, among other things, the bid and ask price of each option
+  * @param calls (array[object]) - array of objects representing call options containing, among other things, the bid and ask price of each option
+  *
+  * @param shortStrike (int) - integer representing put shortStrike
+  * @param longStrike (int) - integer representing put longStrike
+  *
+  * @param shortStrike2 (int) - integer representing call shortStrike
+  * @param longStrike2 (int) - integer representing call longStrike
+  *
+  * @return (array[float]) - returns a two element array of [mid price, last price] of an Iron Butterfly spread
+  */
+  function getIBSpreadMidPrice(options, shortStrike, longStrike, shortStrike2, longStrike2)
+  {
+    return getICSpreadMidPrice(options, shortStrike, longStrike, shortStrike2, longStrike2);
+  }
+
+  /**
+  * @Description - Gets the mid price of an four types of option strategies: Put, Call, Iron Condor, and Iron Butterfly Strategies
+  *
+  * @param parsed (object) - a JSON object returning multiple options all expiring on the same date
+  * @param spreadType (text) - string representing the type of spread: "Put", "Call", "IC", "IB"
+  *
+  * @param shortStrike (int) - integer representing put shortStrike
+  * @param longStrike (int) - integer representing put longStrike
+  *
+  * @param shortStrike2 (int) - integer representing call shortStrike
+  * @param longStrike2 (int) - integer representing call longStrike
+  *
+  * @return (array[float]) - returns a two element array of [mid price, last price] of an option spread
+  */
+  function spreadMidCalculator(parsed, spreadType, shortStrike, longStrike, shortStrike2, longStrike2)
+  {
+    var options = parsed.options.option[0];
+    var spreadMidPrice;
+    if (spreadType === "Put") spreadMidPrice = getPutSpreadMidPrice(options, shortStrike, longStrike);
+    else if (spreadType === "Call") spreadMidPrice = getCallSpreadMidPrice(options, shortStrike, longStrike);
+    else if (spreadType === "IC") spreadMidPrice = getICSpreadMidPrice(options, shortStrike, longStrike, shortStrike2, longStrike2);
+    else if (spreadType === "IB") spreadMidPrice = getIBSpreadMidPrice(options, shortStrike, longStrike, shortStrike2, longStrike2);
+    return spreadMidPrice;
+  }
+
+
+function getSpreadPriceFromTradier(ticker, spreadType, exDate, shortStrike, longStrike, shortStrike2, longStrike2, numberOfContracts, credit) {
+  var returnArray = ['Not Responding', 'Not Responding', 'Not Responding'];
+
+
+  var queryString = "https://sandbox.tradier.com/v1/markets/options/chains?symbol="+ticker"&expiration="+convertDateForTradier(exDate);
+  var options = {
+        headers : {
+          "Authorization" : "Bearer PDcI9Z8ztnqwfnsVFkFULUfX2YGB",
+          "Accept" : "application/json" 
+        }
+      };
+  
+  var result = UrlFetchApp.fetch(queryString, options);
+  if (result.getResponseCode() == 200) {
+
+    var json = result.getContentText();
+    var parsed = JSON.parse(json);
+
+    midPrice = spreadMidCalculator(parsed, spreadType, shortStrike, longStrike, shortStrike2, longStrike2);
+    returnArray[0] = midPrice[0];
+    returnArray[1] = midPrice[1];
+    returnArray = (((credit - midPrice[0])*100)*numberOfContracts).toFixed(2);
+  }  
+  return returnArray;
 }
-
-
+function convertDateForTradier(exDate)
+{
+  let split = openDate.split('/');
+  return split[2]+'-'+split[0]+'-'split[1];
+}
 function testGET() {
   var queryString = "https://sandbox.tradier.com/v1/markets/options/chains?symbol=adbe&expiration=2018-11-02";
   
