@@ -197,3 +197,32 @@ function getSpreadPrice(ticker, spreadType, exDate, shortStrike, longStrike, sho
   return returnSpreadPrice;
 
 }
+
+
+function testGET() {
+  var queryString = "https://sandbox.tradier.com/v1/markets/options/chains?symbol=adbe&expiration=2018-11-02";
+  
+  var url = queryString;
+  
+  var options =
+      {
+        headers :
+        {
+          "Authorization" : "Bearer PDcI9Z8ztnqwfnsVFkFULUfX2YGB",
+          "Accept" : "application/json" 
+        }
+      };
+    
+  var result = UrlFetchApp.fetch(url, options);
+  var json = result.getContentText();
+  var data = JSON.parse(json);
+  
+  return JSON.stringify(data.options.option[0]);
+    
+
+  if (result.getResponseCode() == 200) {
+      return JSON.parse(result);
+    
+  }  
+  else return "error";
+}

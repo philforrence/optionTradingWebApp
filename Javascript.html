@@ -472,7 +472,7 @@
   */
   function formatPandL(credit, midPrice, numberOfContracts)
   {
-    if(isNaN(midPrice)) return 'N/A';
+    if(isNaN(midPrice)) return midPrice;
     let pandLText = (((credit - midPrice)*100)*numberOfContracts).toFixed(2);
     if (isNaN(pandLText)) pandLText = null;
     else if (pandLText < 0) pandLText = "<span id=\"negative\"> ($" + Math.abs(pandLText).toFixed(2) +") </span>";
@@ -668,7 +668,7 @@
         break;
       }
       } else if (dir == "desc") {
-        if (greaterThan(y,x)) {
+        if (greaterThan(y, x)) {
           // If so, mark as a switch and break the loop:
           shouldSwitch = true;
           break;
