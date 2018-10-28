@@ -1,4 +1,5 @@
 <script>
+  var cellId = 0;
   /**
   * @param range (array[array[]]) - Sheets cells arranged like
   * 0 - Ticker Symbol
@@ -174,6 +175,9 @@
   function addCell(value, newCell, newRow)
   {
     newCell = newRow.insertCell();
+    newCell.id = cellId
+    cellId++;
+    //console.log(newCell.id);
     let newText = document.createTextNode(value);
     newCell.appendChild(newText);
     return newCell;
@@ -218,7 +222,8 @@
     var lastCell = addCell('', newCell, newRow);
     var pandLCell = addCell('', newCell, newRow);
     var maxLossCell = addCell(maxLoss(range, i), newCell, newRow);
-    getAsynchSpreadPrice(range[i][0], range[i][1], range[i][2], range[i][3], range[i][4], range[i+1][3], range[i+1][4], range[i][5], range[i][6], midCell, lastCell, pandLCell);
+    //console.log(midCell.id, lastCell.id, pandLCell.id);
+    getAsynchSpreadPrice(range[i][0], range[i][1], range[i][2], range[i][3], range[i][4], range[i+1][3], range[i+1][4], range[i][5], range[i][6], midCell.id, lastCell.id, pandLCell.id);
   }
   
   /**
@@ -274,7 +279,6 @@
     var diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24)); 
     return diffDays;
   }
-  
   /**
   * @Description - Gets the midprice of a two option spread where one strike is short (sold) and the other is long (bought)
   *
@@ -502,29 +506,23 @@
   *
   * @return (null)
   */
-  function getAsynchSpreadPrice(ticker, spreadType, exDate, shortStrike, longStrike, shortStrike2, longStrike2, numberOfContracts, credit, midCell, lastCell, pandLCell)
+  function getAsynchSpreadPrice(ticker, spreadType, exDate, shortStrike, longStrike, shortStrike2, longStrike2, numberOfContracts, credit, midCellId, lastCellId, pandLCellId)
   {
-    let midPrice, lastPrice;
-    var exDate = convertDate(exDate);
-    var queryString = "https://cors.io/?https://query1.finance.yahoo.com/v7/finance/options/"+ticker+"?date="+exDate;
-    let pandLText;
-    var request = new XMLHttpRequest();
-    request.onreadystatechange = function() {
-      if (this.readyState == 4 && this.status == 200) {
-        var parsed = JSON.parse(request.responseText);
-        midPrice = spreadMidCalculator(parsed, spreadType, shortStrike, longStrike, shortStrike2, longStrike2);
-        midCell.innerHTML = midPrice[0];
-        lastCell.innerHTML = midPrice[1];
-        pandLCell.innerHTML = formatPandL(credit, midPrice[0], numberOfContracts);
-      }
-      else {
-        midCell.innerHTML = 'Not Responding';
-        lastCell.innerHTML = 'Not Responding';
-        pandLCell.innerHTML = 'N/A'
-      }
-    };
-    request.open('GET', queryString, true);
-    request.send();
+    google.script.run.withSuccessHandler(populateCells).getSpreadPriceFromTradier(ticker, spreadType, exDate, shortStrike, longStrike, shortStrike2, longStrike2, numberOfContracts, credit, midCellId, lastCellId, pandLCellId);
+  }
+  function populateCells(spreadVals)
+  {
+    //console.log(spreadVals[0]);     
+    //console.log(spreadVals[1]);    
+    //console.log(spreadVals[2]);
+
+    midCell = document.getElementById(spreadVals[3]);
+    lastCell = document.getElementById(spreadVals[4]);
+    pandLCell = document.getElementById(spreadVals[5]);
+  
+    midCell.innerHTML = spreadVals[0];
+    lastCell.innerHTML = spreadVals[1];
+    pandLCell.innerHTML = spreadVals[2];
   }
   /**
   * @Description - Returns wether a strategy is a four legged strategy or not
@@ -551,7 +549,7 @@
     let xString = stripTag(x);
     let yString = stripTag(y);
     // console.log(xString.valueOf() + ' > ' + yString.valueOf());
-    //console.log(xString.valueOf() > yString.valueOf());
+    // console.log(xString.valueOf() > yString.valueOf());
     if (xString.includes("/")) return convertDate(xString) > convertDate(yString);
     else if (xString.match(/[a-z]/i)) return xString.toLowerCase() > yString.toLowerCase();
     else if (xString.includes("$")) 
@@ -559,7 +557,7 @@
       xString = stripAccountingFormat(xString);
       yString = stripAccountingFormat(yString);
     }
-    console.log(xString.valueOf() + ' > ' + yString.valueOf());
+    // console.log(xString.valueOf() + ' > ' + yString.valueOf());
 
     return +xString.valueOf() > +yString.valueOf();
   }
@@ -626,7 +624,7 @@
   */
   function sortTable(tableString, n = 2) 
   {
-  console.log(n);
+  //console.log(n);
 
   highlightColumn(tableString, n);
   var table, rows, switching, i, x, y, shouldSwitch;

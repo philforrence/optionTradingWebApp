@@ -98,20 +98,20 @@ function getCurrentPositions()
   */
   function getTwoOptionMidPrice(options, type, shortStrike, longStrike)
   {
-      let i, shortMidPrice, longMidPrice;
-      let shortLastPrice, longLastPrice;
-      for (i = 0; i < option.length; i++)
+      var i, shortMidPrice, longMidPrice;
+      var shortLastPrice, longLastPrice;
+      for (i = 0; i < options.length; i++)
       {
         if (options[i].option_type.toLowerCase() !== type) continue;
         if (options[i].strike == shortStrike)
         {
-          shortLastPrice = option[i].last;
-          shortMidPrice = (option[i].bid + option[i].ask)/2;
+          shortLastPrice = options[i].last;
+          shortMidPrice = (options[i].bid + options[i].ask)/2;
         }
-        if (option[i].strike == longStrike)
+        if (options[i].strike == longStrike)
         {
-          longLastPrice = option[i].last;   
-          longMidPrice = (option[i].bid + option[i].ask)/2;   
+          longLastPrice = options[i].last;   
+          longMidPrice = (options[i].bid + options[i].ask)/2;   
         }
       }
       return [(shortMidPrice - longMidPrice).toFixed(2), (shortLastPrice - longLastPrice).toFixed(2)];
@@ -141,7 +141,6 @@ function getCurrentPositions()
   */
   function getCallSpreadMidPrice(options, shortStrike, longStrike)
   {
-    //console.log('calls');
     return getTwoOptionMidPrice(options, "call", shortStrike, longStrike);
   }
   
@@ -161,8 +160,8 @@ function getCurrentPositions()
   */
   function getICSpreadMidPrice(options, shortStrike, longStrike, shortStrike2, longStrike2)
   {
-    let putSpread = getPutSpreadMidPrice(options, shortStrike, longStrike);
-    let callSpread = getCallSpreadMidPrice(options, shortStrike2, longStrike2);
+    var putSpread = getPutSpreadMidPrice(options, shortStrike, longStrike);
+    var callSpread = getCallSpreadMidPrice(options, shortStrike2, longStrike2);
     return [(+putSpread[0] + +callSpread[0]).toFixed(2), (+putSpread[1] + +callSpread[1]).toFixed(2)];
   }
 
@@ -201,7 +200,7 @@ function getCurrentPositions()
   */
   function spreadMidCalculator(parsed, spreadType, shortStrike, longStrike, shortStrike2, longStrike2)
   {
-    var options = parsed.options.option[0];
+    var options = parsed.options.option;
     var spreadMidPrice;
     if (spreadType === "Put") spreadMidPrice = getPutSpreadMidPrice(options, shortStrike, longStrike);
     else if (spreadType === "Call") spreadMidPrice = getCallSpreadMidPrice(options, shortStrike, longStrike);
@@ -211,18 +210,18 @@ function getCurrentPositions()
   }
 
 
-function getSpreadPriceFromTradier(ticker, spreadType, exDate, shortStrike, longStrike, shortStrike2, longStrike2, numberOfContracts, credit) {
-  var returnArray = ['Not Responding', 'Not Responding', 'Not Responding'];
+function getSpreadPriceFromTradier(ticker, spreadType, exDate, shortStrike, longStrike, shortStrike2, longStrike2, numberOfContracts, credit, midCellId, lastCellId, pandLCellId) {
+  var returnArray = ['Not Responding', 'Not Responding', 'Not Responding', midCellId, lastCellId, pandLCellId];
 
 
-  var queryString = "https://sandbox.tradier.com/v1/markets/options/chains?symbol="+ticker"&expiration="+convertDateForTradier(exDate);
+  var queryString = "https://sandbox.tradier.com/v1/markets/options/chains?symbol="+ticker+"&expiration="+convertDateForTradier(exDate);
   var options = {
         headers : {
           "Authorization" : "Bearer PDcI9Z8ztnqwfnsVFkFULUfX2YGB",
           "Accept" : "application/json" 
         }
       };
-  
+  Utilities.sleep(Math.random() * 1000);
   var result = UrlFetchApp.fetch(queryString, options);
   if (result.getResponseCode() == 200) {
 
@@ -232,14 +231,14 @@ function getSpreadPriceFromTradier(ticker, spreadType, exDate, shortStrike, long
     midPrice = spreadMidCalculator(parsed, spreadType, shortStrike, longStrike, shortStrike2, longStrike2);
     returnArray[0] = midPrice[0];
     returnArray[1] = midPrice[1];
-    returnArray = (((credit - midPrice[0])*100)*numberOfContracts).toFixed(2);
+    returnArray[2] = (((credit - midPrice[0])*100)*numberOfContracts).toFixed(2);
   }  
   return returnArray;
 }
 function convertDateForTradier(exDate)
 {
-  let split = openDate.split('/');
-  return split[2]+'-'+split[0]+'-'split[1];
+  var split = exDate.split('/');
+  return split[2]+'-'+split[0]+'-'+split[1];
 }
 function testGET() {
   var queryString = "https://sandbox.tradier.com/v1/markets/options/chains?symbol=adbe&expiration=2018-11-02";
