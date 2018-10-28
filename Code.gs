@@ -228,28 +228,18 @@ function getSpreadPriceFromTradier(ticker, spreadType, exDate, shortStrike, long
       };
   //Utilities.sleep(Math.random() * 4000);
 
+  var result = UrlFetchApp.fetch(queryString, options);
+  if (result.getResponseCode() == 200) {
 
-  //from here on out is where the exception occcurs.
-  //from the fetch and the parsing
-  try
-  {
-    var result = UrlFetchApp.fetch(queryString, options);
-    if (result.getResponseCode() == 200) {
+    var json = result.getContentText();
+    var parsed = JSON.parse(json);
 
-      var json = result.getContentText();
-      var parsed = JSON.parse(json);
-
-      midPrice = spreadMidCalculator(parsed, spreadType, shortStrike, longStrike, shortStrike2, longStrike2);
-      returnArray[0] = midPrice[0];
-      returnArray[1] = midPrice[1];
-      returnArray[2] = (((credit - midPrice[0])*100)*numberOfContracts).toFixed(2);
-    }  
-    return returnArray;
-  }
-  catch (error)
-  {
-    
-  }
+    midPrice = spreadMidCalculator(parsed, spreadType, shortStrike, longStrike, shortStrike2, longStrike2);
+    returnArray[0] = midPrice[0];
+    returnArray[1] = midPrice[1];
+    returnArray[2] = (((credit - midPrice[0])*100)*numberOfContracts).toFixed(2);
+  }  
+  return returnArray;
 }
 function getDummyPrices(midCellId, lastCellId, pandLCellId)
 {
