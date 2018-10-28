@@ -225,7 +225,7 @@
     //console.log(midCell.id, lastCell.id, pandLCell.id);
     getAsynchSpreadPrice(range[i][0], range[i][1], range[i][2], range[i][3], range[i][4], range[i+1][3], range[i+1][4], range[i][5], range[i][6], midCell.id, lastCell.id, pandLCell.id);
   }
-  
+
   /**
   * @Description - Adds a header to the table with a given name
   *
@@ -508,14 +508,26 @@
   */
   function getAsynchSpreadPrice(ticker, spreadType, exDate, shortStrike, longStrike, shortStrike2, longStrike2, numberOfContracts, credit, midCellId, lastCellId, pandLCellId)
   {
+    //google.script.run.withSuccessHandler(populateCells).getDummyPrices(midCellId, lastCellId, pandLCellId);
     google.script.run.withSuccessHandler(populateCells).getSpreadPriceFromTradier(ticker, spreadType, exDate, shortStrike, longStrike, shortStrike2, longStrike2, numberOfContracts, credit, midCellId, lastCellId, pandLCellId);
   }
+  function rerun(spreadVals)
+  {
+    getAsynchSpreadPrice(spreadVals[6], spreadVals[7], spreadVals[8], spreadVals[9], spreadVals[10], spreadVals[11], spreadVals[12], spreadVals[13], spreadVals[14], spreadVals[3], spreadVals[4], spreadVals[5]);
+  }
+
+  function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  async function demo() {
+    console.log('Taking a break...');
+    await sleep(20000);
+    console.log('Twenty seconds later');
+  }
+
   function populateCells(spreadVals)
   {
-    //console.log(spreadVals[0]);     
-    //console.log(spreadVals[1]);    
-    //console.log(spreadVals[2]);
-
     midCell = document.getElementById(spreadVals[3]);
     lastCell = document.getElementById(spreadVals[4]);
     pandLCell = document.getElementById(spreadVals[5]);

@@ -209,9 +209,14 @@ function getCurrentPositions()
     return spreadMidPrice;
   }
 
-
+function getSpreadPriceWrapper(ticker, spreadType, exDate, shortStrike, longStrike, shortStrike2, longStrike2, numberOfContracts, credit, midCellId, lastCellId, pandLCellId)
+{
+    //Utilities.sleep(Math.random() * 1000);
+    return [0, .3, 1, midCellId, lastCellId, pandLCellId];    
+    //return getSpreadPriceFromTradier(ticker, spreadType, exDate, shortStrike, longStrike, shortStrike2, longStrike2, numberOfContracts, credit, midCellId, lastCellId, pandLCellId);
+}
 function getSpreadPriceFromTradier(ticker, spreadType, exDate, shortStrike, longStrike, shortStrike2, longStrike2, numberOfContracts, credit, midCellId, lastCellId, pandLCellId) {
-  var returnArray = ['Not Responding', 'Not Responding', 'Not Responding', midCellId, lastCellId, pandLCellId];
+  var returnArray = ['Not Responding', 'Not Responding', 'Not Responding', midCellId, lastCellId, pandLCellId, ticker, spreadType, exDate, shortStrike, longStrike, shortStrike2, longStrike2, numberOfContracts, credit];
 
 
   var queryString = "https://sandbox.tradier.com/v1/markets/options/chains?symbol="+ticker+"&expiration="+convertDateForTradier(exDate);
@@ -221,19 +226,34 @@ function getSpreadPriceFromTradier(ticker, spreadType, exDate, shortStrike, long
           "Accept" : "application/json" 
         }
       };
-  Utilities.sleep(Math.random() * 1000);
-  var result = UrlFetchApp.fetch(queryString, options);
-  if (result.getResponseCode() == 200) {
+  //Utilities.sleep(Math.random() * 4000);
 
-    var json = result.getContentText();
-    var parsed = JSON.parse(json);
 
-    midPrice = spreadMidCalculator(parsed, spreadType, shortStrike, longStrike, shortStrike2, longStrike2);
-    returnArray[0] = midPrice[0];
-    returnArray[1] = midPrice[1];
-    returnArray[2] = (((credit - midPrice[0])*100)*numberOfContracts).toFixed(2);
-  }  
-  return returnArray;
+  //from here on out is where the exception occcurs.
+  //from the fetch and the parsing
+  try
+  {
+    var result = UrlFetchApp.fetch(queryString, options);
+    if (result.getResponseCode() == 200) {
+
+      var json = result.getContentText();
+      var parsed = JSON.parse(json);
+
+      midPrice = spreadMidCalculator(parsed, spreadType, shortStrike, longStrike, shortStrike2, longStrike2);
+      returnArray[0] = midPrice[0];
+      returnArray[1] = midPrice[1];
+      returnArray[2] = (((credit - midPrice[0])*100)*numberOfContracts).toFixed(2);
+    }  
+    return returnArray;
+  }
+  catch (error)
+  {
+    
+  }
+}
+function getDummyPrices(midCellId, lastCellId, pandLCellId)
+{
+  return [0, .3, 1, midCellId, lastCellId, pandLCellId]
 }
 function convertDateForTradier(exDate)
 {
