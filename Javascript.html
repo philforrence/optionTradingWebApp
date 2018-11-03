@@ -218,7 +218,7 @@
     var lastCell = addCell('', newCell, newRow);
     var pandLCell = addCell('', newCell, newRow);
     var maxLossCell = addCell(maxLoss(range, i), newCell, newRow);
-    getAsynchSpreadPrice(range[i][0], range[i][1], range[i][2], range[i][3], range[i][4], range[i+1][3], range[i+1][4], range[i][5], range[i][6], midCell, lastCell, pandLCell);
+    getAsynchSpreadPrice(range[i][0], range[i][1], range[i][2], range[i][3], range[i][4], range[i+1][3], range[i+1][4], range[i][5], range[i][6], midCell, lastCell, pandLCell, newRow);
   }
 
   /**
@@ -507,7 +507,7 @@
     return split[2]+'-'+split[0]+'-'+split[1];
   }
 
-  function getAsynchSpreadPrice(ticker, spreadType, exDate, shortStrike, longStrike, shortStrike2, longStrike2, numberOfContracts, credit, midCell, lastCell, pandLCell)
+  function getAsynchSpreadPrice(ticker, spreadType, exDate, shortStrike, longStrike, shortStrike2, longStrike2, numberOfContracts, credit, midCell, lastCell, pandLCell, newRow)
   {
     var queryString = "https://sandbox.tradier.com/v1/markets/options/chains?symbol="+ticker+"&expiration="+convertDateForTradier(exDate);
     var request = new XMLHttpRequest();
@@ -519,6 +519,12 @@
         midCell.innerHTML = midPrice[0];
         lastCell.innerHTML  = midPrice[1];
         pandLCell.innerHTML = formatPandL(credit, midPrice[0], numberOfContracts);
+
+        let exDateObject = new Date(exDate);
+        exDateObject.setDate(exDateObject.getDate()-15);
+
+        if(midPrice[0] < credit/2) newRow.id = "takeOffForWinner";
+        else if(exDateObject < Date.now() && midPrice[0] < credit) newRow.id = "rollToNextMonth";
       }
       else {
         midCell.innerHTML = 'Not Responding';
