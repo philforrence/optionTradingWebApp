@@ -526,14 +526,16 @@
         let daysToExpiration21 = new Date(exDate);
         daysToExpiration21.setDate(daysToExpiration21.getDate()-21);
 
+        let firstCell = newRow.getElementsByTagName("TD")[0];
+
         if(midPrice[0] < credit/2) 
-          newRow.id = "takeOffForWinner";
+          firstCell.id = "takeOffForWinner";
         else if(daysToExpiration14 < Date.now() && midPrice[0] < credit) 
-          newRow.id = "rollToNextMonth";
-        else if(daysToExpiration21 < Date.now() && hasFourLegs(spreadType) && shortStrike2>=shortStrike) newRow.id = "rollUntestedSide";
-        else if(daysToExpiration14 < Date.now() && hasFourLegs(spreadType) && shortStrike2>=shortStrike) newRow.id = "rollToButterfly";
+          firstCell.id = "rollToNextMonth";
+        else if(daysToExpiration14 < Date.now() && hasFourLegs(spreadType) && shortStrike2>shortStrike) firstCell.id = "rollToButterfly";
+        else if(daysToExpiration21 < Date.now() && hasFourLegs(spreadType) && shortStrike2>shortStrike) firstCell.id = "rollUntestedSide";
         else if (daysToExpiration21 < Date.now() && !hasFourLegs(spreadType)) 
-          newRow.id = "addCreditSpread";
+          firstCell.id = "addCreditSpread";
       }
       else {
         midCell.innerHTML = 'Not Responding';
