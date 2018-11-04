@@ -1,4 +1,14 @@
 <script>
+  var TICKERSYMBOL = 0;
+  var SPREADTYPE = 1;
+  var EXDATE = 2;
+  var SHORTSTRIKE = 3;
+  var LONGSTRIKE = 4;
+  var NUMBEROFCONTRACTS = 5;
+  var OPENPRICE = 6;
+  var CLOSEPRICE =  7;
+  var OPENDATE = 8;
+  var CLOSEDATE = 9;
   /**
   * @param range (array[array[]]) - Sheets cells arranged like
   * 0 - Ticker Symbol
@@ -97,36 +107,25 @@
       for (var j = 0; j < range[i].length; j++) {
           addCell(range[i][j], newCell, newRow);
       }
-      let pandL = ((range[i][6]-range[i][7])*100*range[i][5]).toFixed(2);
-      let pandLText = formatPandL(range[i][6], range[i][7], range[i][5]);
-      // let pandLText;
-      // if (pandL < 0) pandLText = "($"+pandL+")";
-      // else pandLText = "$"+pandL;
+      if (!range[i][5] || !range[i][7]) continue;
+      let pandL = formatPandL(range[i][6], range[i][7], range[i][5]);
       let daysInTrade = calculateDaysInTrade(range[i][8], range[i][9]);
-      addCell(pandLText, newCell, newRow);
+      let pandLDay = formatPandLPerDay(range[i][6], range[i][7], range[i][5], daysInTrade);
+      addCell(pandL, newCell, newRow);
       addCell(daysInTrade, newCell, newRow);
-  
-      let pandLDay = (parseInt(pandL)/parseInt(daysInTrade)).toFixed(2);
-      let pandLDayText;
-      if (pandL < 0) pandLDayText = "($"+pandLDay+")";
-      else pandLDayText = "$"+pandLDay;
-      addCell(pandLDayText, newCell, newRow);
+      addCell(pandLDay, newCell, newRow);
     }
   
     var tr, th;
     newRow = header.insertRow();     
     for (var j = 0; j < range[0].length; j++) {
-        tr = document.getElementById('table2018').tHead.children[0],
-        th = document.createElement('th');
-        currentValue = range[0][j];
-        th.innerHTML = currentValue;
-        tr.appendChild(th);
+      addHeader(tableString, range[0][j]);
     }
     addHeader(tableString, "P/L");
     addHeader(tableString, "Days in Trade");
     addHeader(tableString, "P/L/Day");
     //addHeader(tableString, "Max Loss");
-    sortTable(tableString);
+    sortTable(tableString, 0);
   }
   /**
   * @param range (array[array[]]) - Sheets cells arranged like
@@ -143,10 +142,11 @@
   */
   function setStats(range)
   {
-    var tableString = "stats";
+    var tableString = "statsTable";
     var tab = document.getElementById(tableString);
     var newRow, newCell;
     var header = tab.createTHead();
+
     let pandLCumulative = 0;
   
     for (var i = 1; i < range.length; i++) {
@@ -157,8 +157,12 @@
         pandLCumulative += (openPrice - closePrice)*numberOfContracts*100;
     }
     newRow = tab.insertRow();
-    addCell("$"+pandLCumulative, newCell, newRow);
-    //addHeader(tableString, "P/L");
+    if (pandLCumulative < 0) addCell("($"+Math.abs(pandLCumulative)+")", newCell, newRow);
+    else addCell("$"+pandLCumulative, newCell, newRow);
+
+    newRow = header.insertRow();     
+    addHeader(tableString, "P/L");
+    //addHeader(tableString, "HECK");
   }
 
 
@@ -174,8 +178,9 @@
   function addCell(value, newCell, newRow)
   {
     newCell = newRow.insertCell();
-    let newText = document.createTextNode(value);
-    newCell.appendChild(newText);
+    newCell.innerHTML=value;
+    // let newText = document.createTextNode(value);
+    // newCell.appendChild(newText);
     return newCell;
   }
   /**
@@ -478,6 +483,17 @@
     return pandLText;
   }
   /**
+  * @Description - Formats P/L statement, adds tag for further styling
+  *
+  * @param credit (float) - number representing credit for trade
+  *
+  * @return (html) - formatted text
+  */
+  function formatPandLPerDay(credit, midPrice, numberOfContracts, daysInTrade)
+  {
+     return formatPandL(credit/daysInTrade, midPrice/daysInTrade, numberOfContracts);
+  }
+  /**
   * @Description - Asynchronously calls out to Yahoo and parses the response to calculate a mid price, last price
   *
   * @param ticker (text) - Stock Ticker Symbol
@@ -650,8 +666,8 @@
   */
   function sortTable(tableString, n = 2) 
   {
-  //console.log(n);
-
+  console.log('sort', n);
+  
   highlightColumn(tableString, n);
   var table, rows, switching, i, x, y, shouldSwitch;
   let dir, switchcount = 0;
