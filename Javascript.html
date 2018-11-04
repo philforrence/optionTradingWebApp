@@ -520,11 +520,20 @@
         lastCell.innerHTML  = midPrice[1];
         pandLCell.innerHTML = formatPandL(credit, midPrice[0], numberOfContracts);
 
-        let exDateObject = new Date(exDate);
-        exDateObject.setDate(exDateObject.getDate()-15);
+        let daysToExpiration14 = new Date(exDate);
+        daysToExpiration14.setDate(daysToExpiration14.getDate()-14);
 
-        if(midPrice[0] < credit/2) newRow.id = "takeOffForWinner";
-        else if(exDateObject < Date.now() && midPrice[0] < credit) newRow.id = "rollToNextMonth";
+        let daysToExpiration21 = new Date(exDate);
+        daysToExpiration21.setDate(daysToExpiration21.getDate()-21);
+
+        if(midPrice[0] < credit/2) 
+          newRow.id = "takeOffForWinner";
+        else if(daysToExpiration14 < Date.now() && midPrice[0] < credit) 
+          newRow.id = "rollToNextMonth";
+        else if(daysToExpiration21 < Date.now() && hasFourLegs(spreadType) && shortStrike2>=shortStrike) newRow.id = "rollUntestedSide";
+        else if(daysToExpiration14 < Date.now() && hasFourLegs(spreadType) && shortStrike2>=shortStrike) newRow.id = "rollToButterfly";
+        else if (daysToExpiration21 < Date.now() && !hasFourLegs(spreadType)) 
+          newRow.id = "addCreditSpread";
       }
       else {
         midCell.innerHTML = 'Not Responding';
@@ -537,6 +546,7 @@
     request.setRequestHeader("Accept", "application/json");
     request.send();
   }
+
   /**
   * @Description - Returns wether a strategy is a four legged strategy or not
   *
@@ -546,6 +556,7 @@
   */ 
   function hasFourLegs(htmlElement)
   {
+    if (typeof htmlElement === "string") return htmlElement === "IB" || htmlElement === "IC";
     return htmlElement.innerHTML === "IB" || htmlElement.innerHTML === "IC";
   }
     /**
@@ -555,7 +566,7 @@
   * @param x (htmlElemt) - first HTML element to be compared
   * @param y (htmlElemt) - second HTML element to be compared
   *
-  * @return (boolean) - if x > y true, else false 
+  * @return (boolean) - if x > y true, else false  
   */ 
   function greaterThan(x,y)
   { 
