@@ -10,17 +10,11 @@
   const OPENDATE = 8;
   const CLOSEDATE = 9;
   /**
-  * @param range (array[array[]]) - Sheets cells arranged like
-  * 0 - Ticker Symbol
-  * 1 - Ticker Spread 
-  * 2 - Ex-Date 
-  * 3 - Short 
-  * 4 - Long          
-  * 5 - Number of Contracts
-  * 6 - Open Price
-  * 7 - Close Price
-  * 8 - Open Date
-  * 9 - Close Date
+  * @Description - Loads all the tables of the application and passes them the data from the sheet
+  *
+  * @param range (array[array[]]) - Two-d array of all the trade data
+  *
+  * @return (null)
   */
   function loadTables(range)
   {
@@ -29,17 +23,11 @@
     setStats(range);
   }
   /**
-  * @param range (array[array[]]) - Sheets cells arranged like
-  * 0 - Ticker Symbol
-  * 1 - Ticker Spread 
-  * 2 - Ex-Date 
-  * 3 - Short 
-  * 4 - Long          
-  * 5 - Number of Contracts
-  * 6 - Open Price
-  * 7 - Close Price
-  * 8 - Open Date
-  * 9 - Close Date
+  * @Description - Loads all the open trades, puts them in the table, and calculates necessary figures. Ends by sorting the table.
+  *
+  * @param range (array[array[]]) - Two-d array of all the trade data
+  *
+  * @return (null)
   */
   function findOpenTrades(range)
   {
@@ -82,17 +70,11 @@
     sortTable(tableString);
   }
   /**
-  * @param range (array[array[]]) - Sheets cells arranged like
-  * 0 - Ticker Symbol
-  * 1 - Ticker Spread 
-  * 2 - Ex-Date 
-  * 3 - Short 
-  * 4 - Long          
-  * 5 - Number of Contracts
-  * 6 - Open Price
-  * 7 - Close Price
-  * 8 - Open Date
-  * 9 - Close Date
+  * @Description - Loads all the trades, puts them in the table, and calculates necessary figures. Ends by sorting the table.
+  *
+  * @param range (array[array[]]) - Two-d array of all the trade data
+  *
+  * @return (null)
   */
   function set2018Trades(range)
   {
@@ -124,7 +106,6 @@
     addHeader(tableString, "P/L");
     addHeader(tableString, "Days in Trade");
     addHeader(tableString, "P/L/Day");
-    //addHeader(tableString, "Max Loss");
     sortTable(tableString, TICKERSYMBOL);
   }
   /**
@@ -148,21 +129,25 @@
     var header = tab.createTHead();
 
     let pandLCumulative = 0;
+    let sumDaysInTrade = 0;
   
     for (var i = 1; i < range.length; i++) {
-        let openPrice = range[i][6];
+        let openPrice = range[i][OPENPRICE];
         let closePrice = range[i][CLOSEPRICE];
         if(closePrice === '') continue;
         let numberOfContracts = range[i][NUMBEROFCONTRACTS];
+
         pandLCumulative += (openPrice - closePrice)*numberOfContracts*100;
+        sumDaysInTrade += calculateDaysInTrade(range[i][OPENDATE], range[i][CLOSEDATE]);
     }
     newRow = tab.insertRow();
     if (pandLCumulative < 0) addCell("($"+Math.abs(pandLCumulative)+")", newCell, newRow);
     else addCell("$"+pandLCumulative, newCell, newRow);
+    addCell(sumDaysInTrade/range.length, newCell, newRow);
 
     newRow = header.insertRow();     
     addHeader(tableString, "P/L");
-    //addHeader(tableString, "HECK");
+    addHeader(tableString, "Average Days In Trade");
   }
 
 
