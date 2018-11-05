@@ -1,14 +1,14 @@
 <script>
-  var TICKERSYMBOL = 0;
-  var SPREADTYPE = 1;
-  var EXDATE = 2;
-  var SHORTSTRIKE = 3;
-  var LONGSTRIKE = 4;
-  var NUMBEROFCONTRACTS = 5;
-  var OPENPRICE = 6;
-  var CLOSEPRICE =  7;
-  var OPENDATE = 8;
-  var CLOSEDATE = 9;
+  const TICKERSYMBOL = 0;
+  const SPREADTYPE = 1;
+  const EXDATE = 2;
+  const SHORTSTRIKE = 3;
+  const LONGSTRIKE = 4;
+  const NUMBEROFCONTRACTS = 5;
+  const OPENPRICE = 6;
+  const CLOSEPRICE =  7;
+  const OPENDATE = 8;
+  const CLOSEDATE = 9;
   /**
   * @param range (array[array[]]) - Sheets cells arranged like
   * 0 - Ticker Symbol
@@ -49,8 +49,8 @@
     var header = tab.createTHead();
   
     for (var i = 1; i < range.length; i++) {
-      if(range[i][3] == "") break;
-      if(range[i][9] == "")
+      if(range[i][SHORTSTRIKE] == "") break;
+      if(range[i][CLOSEDATE] == "")
       {
         newRow = tab.insertRow();
         for (var j = 0; j < range[i].length; j++) {
@@ -58,7 +58,7 @@
           addCell(range[i][j], newCell, newRow);
         }        
         addCalculations(range, newCell, newRow, i);
-        if(range[i][1] == "IB" ||range[i][1] == "IC")
+        if(range[i][SPREADTYPE] == "IB" ||range[i][SPREADTYPE] == "IC")
         {
           i++;
           newRow = tab.insertRow();
@@ -102,15 +102,15 @@
     var header = tab.createTHead();
   
     for (var i = 1; i < range.length; i++) {
-      if(range[i][3] == "") break;
+      if(range[i][SHORTSTRIKE] == "") break;
       newRow = tab.insertRow();
       for (var j = 0; j < range[i].length; j++) {
           addCell(range[i][j], newCell, newRow);
       }
-      if (!range[i][5] || !range[i][7]) continue;
-      let pandL = formatPandL(range[i][6], range[i][7], range[i][5]);
-      let daysInTrade = calculateDaysInTrade(range[i][8], range[i][9]);
-      let pandLDay = formatPandLPerDay(range[i][6], range[i][7], range[i][5], daysInTrade);
+      if (!range[i][NUMBEROFCONTRACTS] || !range[i][CLOSEPRICE]) continue;
+      let pandL = formatPandL(range[i][OPENPRICE], range[i][CLOSEPRICE], range[i][NUMBEROFCONTRACTS]);
+      let daysInTrade = calculateDaysInTrade(range[i][OPENDATE], range[i][CLOSEDATE]);
+      let pandLDay = formatPandLPerDay(range[i][OPENPRICE], range[i][CLOSEPRICE], range[i][NUMBEROFCONTRACTS], daysInTrade);
       addCell(pandL, newCell, newRow);
       addCell(daysInTrade, newCell, newRow);
       addCell(pandLDay, newCell, newRow);
@@ -125,7 +125,7 @@
     addHeader(tableString, "Days in Trade");
     addHeader(tableString, "P/L/Day");
     //addHeader(tableString, "Max Loss");
-    sortTable(tableString, 0);
+    sortTable(tableString, TICKERSYMBOL);
   }
   /**
   * @param range (array[array[]]) - Sheets cells arranged like
@@ -151,9 +151,9 @@
   
     for (var i = 1; i < range.length; i++) {
         let openPrice = range[i][6];
-        let closePrice = range[i][7];
+        let closePrice = range[i][CLOSEPRICE];
         if(closePrice === '') continue;
-        let numberOfContracts = range[i][5];
+        let numberOfContracts = range[i][NUMBEROFCONTRACTS];
         pandLCumulative += (openPrice - closePrice)*numberOfContracts*100;
     }
     newRow = tab.insertRow();
@@ -223,7 +223,7 @@
     var lastCell = addCell('', newCell, newRow);
     var pandLCell = addCell('', newCell, newRow);
     var maxLossCell = addCell(maxLoss(range, i), newCell, newRow);
-    getAsynchSpreadPrice(range[i][0], range[i][1], range[i][2], range[i][3], range[i][4], range[i+1][3], range[i+1][4], range[i][5], range[i][6], midCell, lastCell, pandLCell, newRow);
+    getAsynchSpreadPrice(range[i][TICKERSYMBOL], range[i][SPREADTYPE], range[i][EXDATE], range[i][SHORTSTRIKE], range[i][LONGSTRIKE], range[i+1][SHORTSTRIKE], range[i+1][LONGSTRIKE], range[i][NUMBEROFCONTRACTS], range[i][OPENPRICE], midCell, lastCell, pandLCell, newRow);
   }
 
   /**
@@ -256,7 +256,7 @@
   */
   function checkClosingData(i)
   {
-    if (i===7||i===9) return true;
+    if (i===CLOSEPRICE||i===CLOSEDATE) return true;
     return false;
   }
   
@@ -449,13 +449,13 @@
   */
   function maxLoss(range, i)
   {
-    let spreadType = range[i][1];
-    let shortStrike = range[i][3];
-    let longStrike = range[i][4];
-    let shortStrike2 = range[i+1][3];
-    let longStrike2 = range[i+1][4];
-    let numberOfContracts = range[i][5];
-    let creditPerContract = range[i][6];
+    let spreadType = range[i][SPREADTYPE];
+    let shortStrike = range[i][SHORTSTRIKE];
+    let longStrike = range[i][LONGSTRIKE];
+    let shortStrike2 = range[i+1][SHORTSTRIKE];
+    let longStrike2 = range[i+1][LONGSTRIKE];
+    let numberOfContracts = range[i][NUMBEROFCONTRACTS];
+    let creditPerContract = range[i][OPENPRICE];
   
     let maxDiff;
     if (spreadType === "Put" || spreadType === "Call") 
