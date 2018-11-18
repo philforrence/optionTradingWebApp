@@ -11,9 +11,7 @@
   const CLOSEDATE = 9;
 
   var tickerMaxLossMap = new Map();
-  // tickerSymbols = [];
-  // tickerSymbolMaxLossLookup = [];
-  //[{ticker:"AABA", maxLoss:"100"}, ...]
+  var capitalInvested = 0;
 
   /**
   * @Description - Loads all the tables of the application and passes them the data from the sheet
@@ -28,7 +26,7 @@
     //function to change 'range' into a global object, much more easily accessible by named fields.
 
     findOpenTrades(range);
-    setPercentageTable();
+    google.script.run.withSuccessHandler(setCapital).getCapital();
     set2018Trades(range);
     setStats(range);
   }
@@ -79,44 +77,34 @@
     addHeader(tableString, "Max Loss");
     sortTable(tableString);
   }
-
+  function setCapital(range)
+  {
+    for(let i = 0; i < range.length; i++)
+    {
+      capitalInvested += range[i][0];
+    }
+    setPercentageTable();
+  }
   function setPercentageTable()
   {
     let tableString = "currentPositionsPercentage";
     let tab = document.getElementById(tableString);
     let newRow, newCell;
-    console.log(tickerMaxLossMap);
     var header = tab.createTHead();
     newRow = header.insertRow();     
     addHeader(tableString, "Ticker");
     addHeader(tableString, "Max Loss");
 
-
     let sortedMap = new Map([...tickerMaxLossMap.entries()].sort());
     
-
     sortedMap.forEach(function(value, key, map)
     {
       //console.log(`m[${key}] = ${value}`);
       newRow = tab.insertRow();
       addCell(key, newCell, newRow);
-
-      addCell("$"+ +tickerMaxLossMap.get(key), newCell, newRow);
+      let percent = ((+tickerMaxLossMap.get(key))*100/capitalInvested)+"%";
+      addCell(percent, newCell, newRow);
     });
-
-    // const ordered = {};
-    // Object.keys(tickerMaxLossMap).sort().forEach(function(key) {
-    //   ordered[key] = tickerMaxLossMap[key];
-    // });
-
-    // Object.keys(ordered).forEach(function(key)
-    // {
-    //   console.log(key, tickerMaxLossMap.get(key));
-    //   newRow = tab.insertRow();
-    //   addCell(key, newCell, newRow);
-    //   addCell(tickerMaxLossMap.get(key), newCell, newRow);
-    // });
-
   }
   /**
   * @Description - Loads all the trades, puts them in the table, and calculates necessary figures. Ends by sorting the table.

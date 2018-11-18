@@ -46,46 +46,47 @@ function get2018Trades()
   var sheetName = '2018';
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
   Logger.log(sheet);
-  var range = sheet.getRange('B2:K400').getValues();
+  var range = sheet.getRange('B2:K999').getValues();
   for (var i = 0; i < range.length; i++) {
     for (var j = 0; j < range[i].length; j++) {
-      //range[i][j] = range[i][j].toString();
       if(range[i][j].getMonth) range[i][j] = (range[i][j].getMonth()+1) + '/' +range[i][j].getDate()+ '/'+range[i][j].getYear();
       if (isFloat(range[i][j]))range[i][j] = parseFloat(Math.round(range[i][j] * 100) / 100).toFixed(2);
-
     }
   }
-   return range;
-}
-
-function testFunction()
-{
-  var sheetName = 'Cur';
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
-  Logger.log(sheet);
-  //var range = sheet.getRange('E3:J65').getValues();
-  //var range = sheet.getRange('C3:D65').getValues();
-  var range = sheet.getRange('B2:N65').getValues();
-  for (var i = 0; i < range.length; i++) {
-    for (var j = 0; j < range[i].length; j++) {
-      //range[i][j] = range[i][j].toString();
-      if(range[i][j].getMonth) range[i][j] = (range[i][j].getMonth()+1) + '/' +range[i][j].getDate();
-      if (isFloat(range[i][j]))range[i][j] = parseFloat(Math.round(range[i][j] * 100) / 100).toFixed(2);
-
-    }
-  }
-   return range;
-}
-function getCurrentPositions()
-{
-  var sheetName = 'Cur';
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
-  Logger.log(sheet);
-  var range = sheet.getRange('B2:U90').getValues();
-  Logger.log(range);
-
   return range;
 }
+
+function getCapital()
+{
+  var sheetName = 'Capital';
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
+  var range = sheet.getRange('B2:B999').getValues();
+  return range;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   /**
   * @Description - Gets the midprice of a two option spread where one strike is short (sold) and the other is long (bought)
@@ -209,42 +210,6 @@ function getCurrentPositions()
     return spreadMidPrice;
   }
 
-function getSpreadPriceWrapper(ticker, spreadType, exDate, shortStrike, longStrike, shortStrike2, longStrike2, numberOfContracts, credit, midCellId, lastCellId, pandLCellId)
-{
-    //Utilities.sleep(Math.random() * 1000);
-    return [0, .3, 1, midCellId, lastCellId, pandLCellId];    
-    //return getSpreadPriceFromTradier(ticker, spreadType, exDate, shortStrike, longStrike, shortStrike2, longStrike2, numberOfContracts, credit, midCellId, lastCellId, pandLCellId);
-}
-function getSpreadPriceFromTradier(ticker, spreadType, exDate, shortStrike, longStrike, shortStrike2, longStrike2, numberOfContracts, credit, midCellId, lastCellId, pandLCellId) {
-  var returnArray = ['Not Responding', 'Not Responding', 'Not Responding', midCellId, lastCellId, pandLCellId, ticker, spreadType, exDate, shortStrike, longStrike, shortStrike2, longStrike2, numberOfContracts, credit];
-
-
-  var queryString = "https://sandbox.tradier.com/v1/markets/options/chains?symbol="+ticker+"&expiration="+convertDateForTradier(exDate);
-  var options = {
-        headers : {
-          "Authorization" : "Bearer PDcI9Z8ztnqwfnsVFkFULUfX2YGB",
-          "Accept" : "application/json" 
-        }
-      };
-  //Utilities.sleep(Math.random() * 4000);
-
-  var result = UrlFetchApp.fetch(queryString, options);
-  if (result.getResponseCode() == 200) {
-
-    var json = result.getContentText();
-    var parsed = JSON.parse(json);
-
-    midPrice = spreadMidCalculator(parsed, spreadType, shortStrike, longStrike, shortStrike2, longStrike2);
-    returnArray[0] = midPrice[0];
-    returnArray[1] = midPrice[1];
-    returnArray[2] = (((credit - midPrice[0])*100)*numberOfContracts).toFixed(2);
-  }  
-  return returnArray;
-}
-function getDummyPrices(midCellId, lastCellId, pandLCellId)
-{
-  return [0, .3, 1, midCellId, lastCellId, pandLCellId]
-}
 function convertDateForTradier(exDate)
 {
   var split = exDate.split('/');
