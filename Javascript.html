@@ -9,6 +9,12 @@
   const CLOSEPRICE =  7;
   const OPENDATE = 8;
   const CLOSEDATE = 9;
+
+  var tickerMaxLossMap = new Map();
+  // tickerSymbols = [];
+  // tickerSymbolMaxLossLookup = [];
+  //[{ticker:"AABA", maxLoss:"100"}, ...]
+
   /**
   * @Description - Loads all the tables of the application and passes them the data from the sheet
   *
@@ -18,7 +24,11 @@
   */
   function loadTables(range)
   {
+
+    //function to change 'range' into a global object, much more easily accessible by named fields.
+
     findOpenTrades(range);
+    setPercentageTable();
     set2018Trades(range);
     setStats(range);
   }
@@ -68,6 +78,45 @@
     addHeader(tableString, "P/L");
     addHeader(tableString, "Max Loss");
     sortTable(tableString);
+  }
+
+  function setPercentageTable()
+  {
+    let tableString = "currentPositionsPercentage";
+    let tab = document.getElementById(tableString);
+    let newRow, newCell;
+    console.log(tickerMaxLossMap);
+    var header = tab.createTHead();
+    newRow = header.insertRow();     
+    addHeader(tableString, "Ticker");
+    addHeader(tableString, "Max Loss");
+
+
+    let sortedMap = new Map([...tickerMaxLossMap.entries()].sort());
+    
+
+    sortedMap.forEach(function(value, key, map)
+    {
+      //console.log(`m[${key}] = ${value}`);
+      newRow = tab.insertRow();
+      addCell(key, newCell, newRow);
+
+      addCell("$"+ +tickerMaxLossMap.get(key), newCell, newRow);
+    });
+
+    // const ordered = {};
+    // Object.keys(tickerMaxLossMap).sort().forEach(function(key) {
+    //   ordered[key] = tickerMaxLossMap[key];
+    // });
+
+    // Object.keys(ordered).forEach(function(key)
+    // {
+    //   console.log(key, tickerMaxLossMap.get(key));
+    //   newRow = tab.insertRow();
+    //   addCell(key, newCell, newRow);
+    //   addCell(tickerMaxLossMap.get(key), newCell, newRow);
+    // });
+
   }
   /**
   * @Description - Loads all the trades, puts them in the table, and calculates necessary figures. Ends by sorting the table.
@@ -130,23 +179,37 @@
 
     let pandLCumulative = 0;
     let sumDaysInTrade = 0;
+    let trades = 0;
+    let tradesClosed = 0;
+    let tradesWon = 0;
   
     for (var i = 1; i < range.length; i++) {
+        let spreadType = range[i][SPREADTYPE];
         let openPrice = range[i][OPENPRICE];
         let closePrice = range[i][CLOSEPRICE];
+        if (openPrice === '' && closePrice === '') continue;
+        trades++;
         if(closePrice === '') continue;
+        tradesClosed++;
+        if (openPrice - closePrice > 0) tradesWon++;
         let numberOfContracts = range[i][NUMBEROFCONTRACTS];
-
         pandLCumulative += (openPrice - closePrice)*numberOfContracts*100;
         sumDaysInTrade += calculateDaysInTrade(range[i][OPENDATE], range[i][CLOSEDATE]);
     }
+
+
+
     newRow = tab.insertRow();
     if (pandLCumulative < 0) addCell("($"+Math.abs(pandLCumulative)+")", newCell, newRow);
     else addCell("$"+pandLCumulative, newCell, newRow);
-    addCell(sumDaysInTrade/range.length, newCell, newRow);
+    addCell((tradesWon/tradesClosed*100).toFixed(2) +"%", newCell, newRow);
+    addCell(trades, newCell, newRow);
+    addCell(sumDaysInTrade/trades, newCell, newRow);
 
     newRow = header.insertRow();     
     addHeader(tableString, "P/L");
+    addHeader(tableString, "Win %");
+    addHeader(tableString, "Trades");
     addHeader(tableString, "Average Days In Trade");
   }
 
@@ -168,34 +231,11 @@
     // newCell.appendChild(newText);
     return newCell;
   }
-  /**
-  * @param shortStrike (int) - integer representing shortStrike
-  * @param longStrike (int) - integer representing longStrike
-  * @param credit (int) - credit received in trade
-  * @param numberOfContracts (int) - number of contracts of the above paramaters
-  *
-  * @return (int) - returns max loss on this trade rounded to two decimal points
-  */
-  function calculateMaxLoss(shortStrike, longStrike, credit, numberOfContracts)
-  {
-    var spreadWidth = Math.abs(shortStrike-longStrike);
-    var maxLossUnit = spreadWidth-credit;
-    var maxLossTotal = maxLossUnit*numberOfContracts;
-    return maxLossTotal.toFixed(2);
-  }
   
   /**
-  * @param range (array[array[]]) - Sheets cells arranged like
-  * 0 - Ticker Symbol
-  * 1 - Ticker Spread 
-  * 2 - Ex-Date 
-  * 3 - Short 
-  * 4 - Long          
-  * 5 - Number of Contracts
-  * 6 - Open Price
-  * 7 - Close Price
-  * 8 - Open Date
-  * 9 - Close Date
+  * @Description - 
+  *
+  * @param range (array[array[]]) - Represents all trades
   * @param newCell (cell) - new cell
   * @param newRow (row) - row on which to add the cell
   * @param i (int) - iterator representing the row of the trade
@@ -207,8 +247,23 @@
     var midCell = addCell('', newCell, newRow);
     var lastCell = addCell('', newCell, newRow);
     var pandLCell = addCell('', newCell, newRow);
-    var maxLossCell = addCell(maxLoss(range, i), newCell, newRow);
+    var maxLossCell = addCell(maxLossText(range, i), newCell, newRow);
+    addMaxLossToTotal(range[i][TICKERSYMBOL], maxLoss(range, i), "currentPositionsPercentage");
     getAsynchSpreadPrice(range[i][TICKERSYMBOL], range[i][SPREADTYPE], range[i][EXDATE], range[i][SHORTSTRIKE], range[i][LONGSTRIKE], range[i+1][SHORTSTRIKE], range[i+1][LONGSTRIKE], range[i][NUMBEROFCONTRACTS], range[i][OPENPRICE], midCell, lastCell, pandLCell, newRow);
+  }
+  function addMaxLossToTotal(tickerSymbol, maxLoss, tableString)
+  {
+    
+    if (tickerMaxLossMap.has(tickerSymbol))
+    {
+      let previousMaxLoss = tickerMaxLossMap.get(tickerSymbol);
+      tickerMaxLossMap.set(tickerSymbol, +previousMaxLoss + +maxLoss);
+    }
+    else
+    {
+      tickerMaxLossMap.set(tickerSymbol, maxLoss);
+      //console.log(tickerSymbol, maxLoss);
+    }
   }
 
   /**
@@ -448,7 +503,11 @@
     else if (spreadType === "IB" || spreadType === "IC")
       maxDiff = maxDifference(shortStrike, longStrike, shortStrike2, longStrike2);
   
-    return "$" + ((maxDiff-creditPerContract) * numberOfContracts*100).toFixed(2);
+    return ((maxDiff-creditPerContract) * numberOfContracts*100).toFixed(2);
+  }
+  function maxLossText(range, i)
+  {
+    return "$" + maxLoss(range, i);
   }
 
   /**
@@ -650,9 +709,7 @@
   * @return (null)
   */
   function sortTable(tableString, n = 2) 
-  {
-  console.log('sort', n);
-  
+  {  
   highlightColumn(tableString, n);
   var table, rows, switching, i, x, y, shouldSwitch;
   let dir, switchcount = 0;
